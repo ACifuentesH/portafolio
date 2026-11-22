@@ -13,6 +13,7 @@ const FIN_VH=7;          // the finance scene gets 7 screens of scroll
 const STEP_VH=1.1;
 const medscroll=$("medscroll"),ctop=$("ctop"),dcur=$("dcur"),demoAp=$("demoAp"),bdetail=$("bdetail"),bdin=$("bdin"),medPanel=medscroll.parentElement;
 let MED_PX=0,MED_LEN=0,TL=[],ECG_PX=400; // ECG_PX: screen y of the page's heartbeat baseline
+const MEASURE=new Map();function cached(key,fn){if(!MEASURE.has(key)){const v=fn();if(!v||v.w!==0)MEASURE.set(key,v);return v}return MEASURE.get(key)}
 function offIn(el,root){let x=0,y=0,e=el;while(e&&e!==root){x+=e.offsetLeft;y+=e.offsetTop;e=e.offsetParent}return{x,y,w:el.offsetWidth,h:el.offsetHeight}}
 function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-vh);
   const bandEl=$("ecgband"),cf=document.querySelector(".cframe");
@@ -70,7 +71,7 @@ function build(el,r,kind){r=smooth(clamp(r));if(!el||el._r===r)return;el._r=r;
   else el.style.transform=r>=1?"":`translateY(${(1-r)*10}px)`}
 
 /* ---------- the demo booking, driven by scroll ---------- */
-const ctr=el=>{const b=offIn(el,medscroll);return[b.x+b.w*.55,b.y+b.h*.6]};
+const ctr=el=>{const b=cached(el,()=>offIn(el,medscroll));return[b.x+b.w*.55,b.y+b.h*.6]};
 let demoStage=-1;
 function demo(s){
   const W=medPanel.clientWidth,H=medPanel.clientHeight;
@@ -111,11 +112,11 @@ function showWeek(w){if(w===shownWeek)return;shownWeek=w;
 function ending(s,W,H){
   const pz=phase("zoom",s),pw=phase("words",s),pk=phase("swipe",s);
   if(pz<=0||demoAp.hidden){bdetail.hidden=true;demoAp.style.visibility="";calG.style.transform="";calG.style.filter="";showWeek(0);frozen=null;return}
-  const y=pageY(s),b=offIn(demoAp,medscroll),wx=b.x+b.w/2,wy=b.y+b.h/2;
+  const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),wx=b.x+b.w/2,wy=b.y+b.h/2;
   const S1=Math.min(.36*W/b.w,.2*H/b.h),ez=1-Math.pow(1-pz,3);
   const pull=smooth(clamp(pk/.3)),sc=Math.pow(S1,ez)*lerp(1,.62,pull),rot=-4*Math.sin(Math.PI*clamp(pz*1.1));
   const tx=W*.5,ty=H*.3,px=lerp(wx,tx,ez),py=lerp(wy-y,ty,ez);
-  medscroll.style.transform=`translate(${px}px,${py}px) rotate(${rot}deg) scale(${sc}) translate(${-wx}px,${-wy}px)`;
+  medscroll.style.transform=`translate3d(${px}px,${py}px,0) rotate(${rot}deg) scale(${sc}) translate(${-wx}px,${-wy}px)`;
   // the booking card: pinned where the block landed, then stretches down and talks
   if(pz>=.98){
     if(!frozen){const pr=medPanel.getBoundingClientRect(),r=demoAp.getBoundingClientRect();frozen={L:r.left-pr.left,T:r.top-pr.top,w:r.width,h:r.height}}
@@ -128,7 +129,7 @@ function ending(s,W,H){
   // weeks fly to the right, faster and faster, then settle
   const wk=14*ease(clamp((pk-.18)/.78)),wi=Math.floor(wk),fr=wk-wi,speed=pk>.18&&pk<.96?Math.sin(Math.PI*clamp((pk-.18)/.78)):0;
   showWeek(pk>=.96?14:wi);
-  calG.style.transform=pk>0&&pk<.96?`translateX(${(fr*calG.offsetWidth*.9).toFixed(1)}px)`:"";
+  calG.style.transform=pk>0&&pk<.96?`translate3d(${(fr*cached("calW",()=>({w:calG.offsetWidth})).w*.9).toFixed(1)}px,0,0)`:"";
   calG.style.filter=speed>.05?`blur(${(speed*7).toFixed(1)}px)`:"";
   calG.style.opacity=pk>0&&pk<.96?(1-Math.abs(fr-.5)*.5).toFixed(2):"";
 }
@@ -162,7 +163,7 @@ const KEYS=[
   {q:.5,  rx:0,  ry:0,   rz:0,  f:"chart",z:1.2},
   {q:1,   rx:0,  ry:0,   rz:0,  f:"chart",z:1.2}];
 const smooth=x=>x*x*(3-2*x),clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),lerp=(a,b,t)=>a+(b-a)*t;
-function target(name,W,H){const b=name==="dash"?{x:0,y:0,w:1280,h:800}:box(name==="card"?ccard:balTile);
+function target(name,W,H){const b=name==="dash"?{x:0,y:0,w:1280,h:800}:cached("cam-"+name,()=>box(name==="card"?ccard:balTile));
   const fitW=name==="dash"?.92:.78,fitH=name==="dash"?.86:.66;
   return{x:b.x+b.w/2,y:b.y+b.h/2,s:Math.min(fitW*W/b.w,fitH*H/b.h)}}
 const DZ=parseFloat(getComputedStyle(document.querySelector(".dash")).zoom)||1; // dashboard is laid out at DZx for sharp text
@@ -191,10 +192,13 @@ function setTile(g){const v=Math.round(TOTAL*g),qi=Math.min(Math.max(Math.ceil(g
   revChg.textContent=qi===0?"↗ Q1 · first quarter":`↗ +${Math.round((v/32100-1)*100)}% since Q1`;return{v,qi}}
 const mix=(c1,c2,t)=>{const h=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));const A=h(c1),B=h(c2);return`rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")})`};
 const CLINIC_BG="#06131D",ECG_V=150; // px/s the monitor trace scrolls
+// neon line without shadowBlur (which is very slow): two soft wide passes under the core line
+function glowStroke(cx,w,a=1){cx.save();cx.lineJoin="round";cx.lineCap="round";
+  cx.strokeStyle=`rgba(255,45,75,${.12*a})`;cx.lineWidth=w*4.5;cx.stroke();cx.strokeStyle=`rgba(255,45,75,${.28*a})`;cx.lineWidth=w*2.2;cx.stroke();
+  cx.strokeStyle="#FF2D4B";cx.lineWidth=w;cx.stroke();cx.restore()}
 // ONE heartbeat renderer: the bridge's final frame and the clinic page both call this, so the hand-off can't change anything
 function ecgFrame(cx,W,y0,t){const amp=Math.min(innerHeight*.13,110),hx=W*.9,ph=t*ECG_V,Y=x=>y0+ecg((x+ph)/260)*amp*clamp(x/40);
-  cx.save();cx.lineWidth=3;cx.lineJoin="round";cx.strokeStyle="#FF2D4B";cx.shadowColor="#FF2D4B";cx.shadowBlur=16;cx.beginPath();
-  for(let x=0;x<=hx;x+=2){const y=Y(x);x?cx.lineTo(x,y):cx.moveTo(x,y)}cx.lineTo(hx,Y(hx));cx.stroke();cx.restore();
+  cx.beginPath();for(let x=0;x<=hx;x+=2){const y=Y(x);x?cx.lineTo(x,y):cx.moveTo(x,y)}cx.lineTo(hx,Y(hx));glowStroke(cx,3);
   monitorHead(cx,hx,Y(hx),t,7,"Heart rate","72 bpm",1,W)}
 // draws the glowing head + "Heart rate" tooltip exactly the same way in the bridge and in the page
 function monitorHead(cx,hx,hy,time,dr,label,value,ta,W){const pulse=1+.25*Math.sin(time*6);
@@ -235,8 +239,7 @@ function drawBridge(time){
   if(fa>0&&ap.length>1){cx.save();cx.beginPath();cx.rect(RR.x-camX,0,RR.w,RR.y+RR.h-camY);cx.clip();
     const gr=cx.createLinearGradient(0,RR.y-camY,0,RR.y+RR.h-camY);gr.addColorStop(0,`rgba(255,45,75,${.38*fa})`);gr.addColorStop(1,"rgba(255,45,75,0)");
     cx.beginPath();cx.moveTo(ap[0][0],RR.y+RR.h-camY);ap.forEach(p=>cx.lineTo(p[0],p[1]));cx.lineTo(ap[ap.length-1][0],RR.y+RR.h-camY);cx.closePath();cx.fillStyle=gr;cx.fill();cx.restore()}
-  cx.save();cx.strokeStyle=RED;cx.lineWidth=lerp(3*k,3,pe);cx.lineJoin="round";cx.shadowColor=RED;cx.shadowBlur=lerp(6,16,clamp(gp*2));
-  cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.stroke();cx.restore();
+  cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));glowStroke(cx,lerp(3*k,3,pe),lerp(.5,1,clamp(gp*2)));
   // quarter markers left behind at each stop
   for(let i=0;i<4;i++){if(g<(i+1)/4-.001)continue;const[x,y]=P((i+1)/4),X=x-camX,Y=y-camY;
     cx.fillStyle="#0A0A0B";cx.strokeStyle=RED;cx.lineWidth=2;cx.beginPath();cx.arc(X,Y,4.5,0,7);cx.fill();cx.stroke()}
@@ -247,13 +250,14 @@ function drawBridge(time){
   monitorHead(cx,hx,hy,time,dr,label,value,ta,W);
   CAM=[camX,camY];return pe;
 }
+let RR0=null;
 function finance(q,W,H){
   const LAND=.5;
   camera(Math.min(q,LAND),W,H);
   ccard.style.setProperty("--sheen",lerp(-60,60,clamp((q-.18)/.2))+"%");
   BR=clamp((q-LAND)/(1-LAND));
-  if(q>=LAND){const a=chartArea.getBoundingClientRect(),s=fin.getBoundingClientRect();RR={x:a.left-s.left+CAM[0],y:a.top-s.top+CAM[1],w:a.width,h:a.height}}
-  else{RR=null;CAM=[0,0];setTile(.25)}
+  if(q>=LAND){if(!RR0){const a=chartArea.getBoundingClientRect(),s=fin.getBoundingClientRect();RR0={x:a.left-s.left+CAM[0],y:a.top-s.top+CAM[1],w:a.width,h:a.height}}RR=RR0}
+  else{RR=null;RR0=null;CAM=[0,0];setTile(.25)}
   const live=q>=LAND;
   bridge.style.opacity=live?1:0;revSvg.style.opacity=live?0:1;
   const pe=smooth(clamp((BR-.46)/.3));
@@ -261,7 +265,7 @@ function finance(q,W,H){
   fin.style.opacity=1;
   fin.style.visibility=BR>=.8?"hidden":"visible";
   finHint.style.opacity=q<.04?.6:0;
-  if(live)drawBridge(performance.now()/1000);else CAM=[0,0];
+  if(!live)CAM=[0,0];
   finCam.style.transform=`translate(${-CAM[0]}px,${-CAM[1]}px)`;
   return BR;
 }
@@ -274,9 +278,10 @@ function autoTo(target,ms){const from=scrollY,t0=performance.now();
   const stop=()=>{AUTO=null;removeEventListener("wheel",hold);removeEventListener("touchmove",hold);removeEventListener("keydown",keys)};
   addEventListener("wheel",hold,{passive:false});addEventListener("touchmove",hold,{passive:false});addEventListener("keydown",keys);
   AUTO={stop};(function step(now){if(!AUTO)return;const u=clamp((now-t0)/ms);scrollTo(0,lerp(from,target,ease(u)));u<1?requestAnimationFrame(step):stop()})(t0)}
-function onScroll(){
-  const vh=innerHeight,W=fin.clientWidth,H=fin.clientHeight;
-  const total=track.offsetHeight-vh,sc=clamp(-track.getBoundingClientRect().top,0,total);
+let VW=innerWidth,VH=innerHeight,SCROLL_MAX=1,TRACK_TOP=0;
+function onScroll(){update(clamp(scrollY-TRACK_TOP,0,SCROLL_MAX))}
+function update(sc){
+  const vh=VH,W=VW,H=VH,total=SCROLL_MAX;
   meter.style.transform=`scaleX(${sc/total})`;
   const finLen=FIN_VH*vh,q=clamp(sc/finLen),r=finance(q,W,H);
   let a;
@@ -298,7 +303,7 @@ function onScroll(){
     const w=a>0&&panels[a-1].querySelector(".word");if(w){w.classList.remove("enter");void w.offsetWidth;w.classList.add("enter")}}
 }
 /* ---------- clinic page: it works ---------- */
-const secY=id=>{let e=$("sec-"+id),y=0;while(e&&e!==medscroll){y+=e.offsetTop;e=e.offsetParent}return y};
+const secY=id=>cached("sec-"+id,()=>{let e=$("sec-"+id),y=0;while(e&&e!==medscroll){y+=e.offsetTop;e=e.offsetParent}return{y,w:1}}).y;
 function goTo(id){const y=Math.min(Math.max(secY(id)-90,0),MED_PX);scrollTo({top:track.offsetTop+FIN_VH*innerHeight+sOfY(y),behavior:reduce?"auto":"smooth"})}
 medscroll.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.go)));
 const tabs=[...document.querySelectorAll("#ctabs button")];
@@ -344,7 +349,12 @@ $("wkPrev").addEventListener("click",()=>{wk=Math.max(0,wk-1);renderWeek()});$("
 renderBook();
 
 layout();moveTab();
-addEventListener("scroll",onScroll,{passive:true});addEventListener("resize",()=>{layout();onScroll()});onScroll();
+function measure(){MEASURE.clear();RR0=null;frozen=null;layout();VW=fin.clientWidth;VH=fin.clientHeight;SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
+measure();
+let SC_T=clamp(scrollY-TRACK_TOP,0,SCROLL_MAX),SC=SC_T,lastFrame=performance.now(),idle=0;
+addEventListener("scroll",()=>{SC_T=clamp(scrollY-TRACK_TOP,0,SCROLL_MAX)},{passive:true});
+addEventListener("resize",()=>{measure();size();sizeBridge();SC=SC_T=clamp(scrollY-TRACK_TOP,0,SCROLL_MAX);update(SC)});
+update(SC);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{layout();onScroll()});
 
 /* ---------- canvas worlds ---------- */
@@ -380,8 +390,12 @@ const DRAW={
       cx.fillStyle=cols[(k%cols.length+cols.length+band*2)%cols.length];cx.fillRect(x,0,w*.55,H)}}
 };
 function draw(ms){requestAnimationFrame(draw);const t=ms/1000; // schedule first: one bad frame can never stop the loop
+  const dt=Math.min(64,Math.max(0,ms-lastFrame));lastFrame=ms;
+  if(SC!==SC_T){const k=reduce?1:1-Math.exp(-dt/85);SC+=(SC_T-SC)*k;if(Math.abs(SC_T-SC)<.35)SC=SC_T;
+    if(!idle){dash.style.willChange="transform,opacity";medscroll.style.willChange="transform"}idle=12;
+    try{update(SC)}catch(e){console.warn(e)}}
+  else if(idle&&!--idle){dash.style.willChange="";medscroll.style.willChange=""} // at rest: let the browser re-raster crisp
   if(BR<1&&parseFloat(bridge.style.opacity||0)>0){try{drawBridge(t)}catch(e){console.warn(e)}}
   FX.forEach(f=>{const d=f.k-pos;if(Math.abs(d)>=1)return;
-    if(f.cv.clientWidth&&Math.abs(f.cv.clientWidth-f.W)>1)size(); // keep the bitmap matched to the box (scrollbars, late layout)
     try{f.cx.clearRect(0,0,f.W,f.H);DRAW[f.type](f.cx,f.W,f.H,reduce?0:t,d)}catch(e){console.warn(e)}})}
 requestAnimationFrame(draw);
