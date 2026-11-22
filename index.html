@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu Nombre — Web Developer &amp; UX/UI</title>
+<meta name="description" content="We can work in any field: a scroll-driven portfolio of web development and UX/UI work.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,500;0,800;1,800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@800&family=Bodoni+Moda:ital,wght@0,400;1,400;1,700&family=Archivo+Black&family=Limelight&family=Shippori+Mincho:wght@800&family=Amiri:wght@700&family=Space+Mono:wght@700&family=Bungee&display=swap">
+</head>
+<body>
+<div class="track" id="track">
+  <div class="stage">
+    <div class="strip" id="strip">
+      <section class="panel" data-s="med" data-fx="med">
+        <div class="mgrad" id="mgrad" aria-hidden="true"></div>
+        <div class="medscroll" id="medscroll">
+          <div class="clinic"><div class="cframe">
+            <div class="ctop" id="ctop"><div class="cglow"></div>
+            <nav class="cnav"><span class="clogo">V</span><span class="cpill"><i>EM</i>Dra. Elena Márquez <small>⌄</small></span><span class="cic">◷</span><span class="csp"></span>
+              <button class="cpill dark-end" data-go="book">Book a visit <i class="blk">→</i></button><span class="cic">⚙</span><span class="cic">⌕</span><span class="cic dot">◔</span></nav>
+            <div class="ctitle" id="sec-overview"><span class="tkick"><i></i>( 02 — healthcare · clínica vida )</span>
+              <h2 class="ttl" aria-label="Care, Book, Heal."><span class="wg"><span class="w w1">Care</span><span class="pc">,</span></span><span class="wg"><span class="w w2">Book</span><span class="pc">,</span></span><span class="wg"><span class="w w3">Heal</span><span class="pc">.</span></span></h2><i class="tbar"></i>
+              <div class="ctabs" id="ctabs"><i class="tind" id="tind"></i><button class="on" data-go="overview">Overview</button><button data-go="services">Services</button><button data-go="book">Location &amp; booking</button><button data-go="agenda">Agenda</button></div></div>
+            <p class="cintro">Clínica Vida · Family medicine &amp; cardiology. Same-week appointments, results online, and a doctor who answers back.</p>
+            </div>
+            <div class="ecgband" id="ecgband"><canvas></canvas></div>
+            <div class="cgrid" id="sec-services">
+              <div class="cc svc" data-svc="Cardiology"><div class="cc-h"><div><h4>Cardiology</h4><p>ECG, stress test, Holter.</p></div><span class="cc-d">··</span></div><div class="cc-f"><p>Same-week visits for chest pain, palpitations and blood pressure.</p><button class="go" aria-label="Book this service">→</button></div></div>
+              <div class="cc svc" data-svc="General check-up"><div class="cc-h"><div><h4>General check-up</h4><p>Annual physical.</p></div><span class="cc-d">··</span></div><div class="cc-f"><p>Full panel, BMI, vitals and a 30-minute talk with your doctor.</p><button class="go" aria-label="Book this service">→</button></div></div>
+              <div class="cc svc" data-svc="Pediatrics"><div class="cc-h"><div><h4>Pediatrics</h4><p>0 to 16 years.</p></div><span class="cc-d">··</span></div><div class="cc-f"><p>Growth tracking, vaccines and sick-child visits the same day.</p><button class="go" aria-label="Book this service">→</button></div></div>
+              <div class="cc svc" data-svc="Telemedicine"><div class="cc-h"><div><h4>Telemedicine</h4><p>Video, 20 min.</p></div><span class="cc-d">··</span></div><div class="cc-f"><p>Follow-ups and prescriptions from home, Mon–Sat.</p><button class="go" aria-label="Book this service">→</button></div></div>
+              <div class="cc svc" data-svc="Lab results"><div class="cc-h"><div><h4>Lab results</h4><p>Online in 24 h.</p></div><span class="cc-d">··</span></div><div class="cc-f"><p>Blood work and imaging sent to your patient portal.</p><button class="go" aria-label="Book this service">→</button></div></div>
+              <div class="cc svc" data-svc="Vaccines"><div class="cc-h"><div><h4>Vaccines</h4><p>Adults &amp; kids.</p></div><span class="cc-d">··</span></div><div class="cc-f"><p>Flu, HPV, hepatitis and travel shots. No appointment needed.</p><button class="go" aria-label="Book this service">→</button></div></div>
+            </div>
+            <div class="crow" id="sec-book">
+              <div class="cc book" id="bk"><div class="cc-h"><div><h4>Book an appointment</h4><p>Pick a day and a time.</p></div><span class="cc-d">··</span></div>
+                <div class="bsvc" id="bsvc">Service: <b>Cardiology</b></div>
+                <div class="bdays" id="bdays"><i class="puck"></i><button data-d="0">Mon<b>23</b></button><button class="on" data-d="1">Tue<b>24</b></button><button data-d="2">Wed<b>25</b></button><button data-d="3">Thu<b>26</b></button><button data-d="4">Fri<b>27</b></button><button class="off" disabled>Sat<b>28</b></button></div>
+                <div class="bslots" id="bslots"><i class="puck"></i><button data-r="1">8:30</button><button data-r="2">9:15</button><button class="on" data-r="4">10:00</button><button class="off" disabled>10:45</button><button data-r="7">11:30</button><button data-r="12">14:00</button><button class="off" disabled>15:00</button><button data-r="15">15:45</button></div>
+                <div class="bfoot"><p id="bsum"><b>Tue 24 Nov · 10:00</b><br>Cardiology · Dra. Márquez</p><button class="cpill blkpill cbtn" id="bconfirm"><span class="cb-l">Confirm booking</span><i class="cb-a">→</i><svg class="cb-spin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><svg class="cb-chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></div></div>
+              <div class="cc loc"><div class="map"><svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <rect width="400" height="220" fill="#0A1924"/><path d="M-10 150 C80 130 160 170 260 120 S380 70 420 80" stroke="#143044" stroke-width="16" fill="none"/>
+                  <path d="M-10 150 C80 130 160 170 260 120 S380 70 420 80" stroke="#2A4A60" stroke-width="2" fill="none" stroke-dasharray="6 8"/>
+                  <path d="M120 -10 L150 230 M280 -10 L250 230 M-10 60 L410 40" stroke="#11283A" stroke-width="9"/>
+                  <rect x="30" y="20" width="70" height="30" rx="6" fill="#0F2333"/><rect x="170" y="65" width="60" height="40" rx="6" fill="#0F2333"/><rect x="290" y="150" width="80" height="45" rx="6" fill="#0E2A22"/>
+                  <circle cx="205" cy="128" r="26" fill="#FF2D4B" opacity=".18"/><circle cx="205" cy="128" r="9" fill="#FF2D4B"/><circle cx="205" cy="128" r="3.5" fill="#fff"/></svg>
+                  <span class="badge">● Open now</span></div>
+                <div class="cc-f"><div><h4>Clínica Vida</h4><p>Av. Francisco de Miranda, Chacao, Caracas<br>Mon–Fri 7:00–18:00 · Sat 8:00–13:00</p></div><a class="go" href="https://www.google.com/maps/search/?api=1&amp;query=Chacao%2C+Caracas" target="_blank" rel="noopener" aria-label="Get directions">↗</a></div></div>
+            </div>
+            <div class="ccal" id="sec-agenda">
+              <div class="cal-h"><div><h3>This week</h3><p>Dra. Elena Márquez · 19 patients</p></div><div class="cal-detail" id="caldet"><span>Select an appointment</span></div><div class="cal-nav"><button id="wkPrev" aria-label="Previous week">‹</button><b id="wkLbl">Nov 23 – 27</b><button id="wkNext" aria-label="Next week">›</button></div></div>
+              <div class="cal-g" id="calg"><div class="tm-h"></div><button class="ap t-z demo" id="demoAp" hidden style="grid-column:5;grid-row:14/span 2"><b>You</b><span>Pediatrics</span><em>14:00</em></button><div class="dh" style="grid-column:2"><span>Mon</span><b>23</b></div><div class="dh" style="grid-column:3"><span>Tue</span><b>24</b></div><div class="dh" style="grid-column:4"><span>Wed</span><b>25</b></div><div class="dh" style="grid-column:5"><span>Thu</span><b>26</b></div><div class="dh on" style="grid-column:6"><span>Fri</span><b>27</b></div><div class="tm" style="grid-row:2">8:00</div><div class="tm" style="grid-row:3">8:30</div><div class="tm" style="grid-row:4">9:00</div><div class="tm" style="grid-row:5">9:30</div><div class="tm" style="grid-row:6">10:00</div><div class="tm" style="grid-row:7">10:30</div><div class="tm" style="grid-row:8">11:00</div><div class="tm" style="grid-row:9">11:30</div><div class="tm" style="grid-row:10">12:00</div><div class="tm" style="grid-row:11">12:30</div><div class="tm" style="grid-row:12">13:00</div><div class="tm" style="grid-row:13">13:30</div><div class="tm" style="grid-row:14">14:00</div><div class="tm" style="grid-row:15">14:30</div><div class="tm" style="grid-row:16">15:00</div><div class="tm" style="grid-row:17">15:30</div><div class="tm" style="grid-row:18">16:00</div><div class="tm" style="grid-row:19">16:30</div><div class="ln" style="grid-row:2"></div><div class="ln" style="grid-row:3"></div><div class="ln" style="grid-row:4"></div><div class="ln" style="grid-row:5"></div><div class="ln" style="grid-row:6"></div><div class="ln" style="grid-row:7"></div><div class="ln" style="grid-row:8"></div><div class="ln" style="grid-row:9"></div><div class="ln" style="grid-row:10"></div><div class="ln" style="grid-row:11"></div><div class="ln" style="grid-row:12"></div><div class="ln" style="grid-row:13"></div><div class="ln" style="grid-row:14"></div><div class="ln" style="grid-row:15"></div><div class="ln" style="grid-row:16"></div><div class="ln" style="grid-row:17"></div><div class="ln" style="grid-row:18"></div><div class="ln" style="grid-row:19"></div><button class="ap t-b" style="grid-column:2;grid-row:2/span 2"><b>Luis P.</b><span>Annual check-up</span><em>8:00</em></button><button class="ap s1 t-g" style="grid-column:2;grid-row:6/span 1"><b>Ana G.</b><span>Pediatrics</span><em>10:00</em></button><button class="ap t-r" style="grid-column:2;grid-row:12/span 2"><b>Carlos M.</b><span>Cardiology</span><em>13:00</em></button><button class="ap s1 t-n" style="grid-column:2;grid-row:16/span 1"><b>Inés V.</b><span>Lab review</span><em>15:00</em></button><button class="ap t-r" style="grid-column:3;grid-row:4/span 2"><b>María F.</b><span>ECG + stress test</span><em>9:00</em></button><button class="ap s1 t-g" style="grid-column:3;grid-row:8/span 1"><b>Tomás L.</b><span>Vaccines</span><em>11:00</em></button><button class="ap t-b" style="grid-column:3;grid-row:14/span 2"><b>Rosa D.</b><span>Telemedicine</span><em>14:00</em></button><button class="ap s1 t-r" style="grid-column:4;grid-row:3/span 1"><b>Pedro S.</b><span>Blood pressure</span><em>8:30</em></button><button class="ap t-g" style="grid-column:4;grid-row:7/span 2"><b>Lucía A.</b><span>Pediatrics</span><em>10:30</em></button><button class="ap s1 t-n" style="grid-column:4;grid-row:11/span 1"><b>Jorge H.</b><span>Follow-up</span><em>12:30</em></button><button class="ap t-r" style="grid-column:4;grid-row:15/span 2"><b>Elena C.</b><span>Holter fitting</span><em>14:30</em></button><button class="ap s1 t-b" style="grid-column:5;grid-row:2/span 1"><b>Daniel R.</b><span>Check-up</span><em>8:00</em></button><button class="ap t-r" style="grid-column:5;grid-row:5/span 2"><b>Camila O.</b><span>Cardiology</span><em>9:30</em></button><button class="ap s1 t-n" style="grid-column:5;grid-row:10/span 1"><b>Hugo B.</b><span>Lab results</span><em>12:00</em></button><button class="ap t-b" style="grid-column:5;grid-row:17/span 2"><b>Valentina M.</b><span>Telemedicine</span><em>15:30</em></button><button class="ap t-r" style="grid-column:6;grid-row:3/span 2"><b>Andrés K.</b><span>ECG</span><em>8:30</em></button><button class="ap s1 t-g" style="grid-column:6;grid-row:8/span 1"><b>Paula T.</b><span>Vaccines</span><em>11:00</em></button><button class="ap s1 t-n" style="grid-column:6;grid-row:12/span 1"><b>Miguel F.</b><span>Follow-up</span><em>13:00</em></button><button class="ap t-m" style="grid-column:6;grid-row:18/span 2"><b>Sofía R.</b><span>Music therapy ♪</span><em>16:00</em></button></div>
+            </div>
+          </div></div>
+        
+          <div class="dcur" id="dcur" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.4-7.3L4 18z" fill="#fff" stroke="#06131D" stroke-width="1.4" stroke-linejoin="round"/></svg><i></i></div>
+        </div>
+        <div class="bdetail" id="bdetail" hidden><div class="bd-in" id="bdin">
+          <div class="bd-top"><span><b>You</b> · Pediatrics</span><span id="bdDate">Thu 26 Nov · 14:00</span></div>
+          <p class="bd-say" id="bdSay"><span>No,</span> <span>I</span> <span>really</span> <span>mean</span> <span>any</span> <span class="bd-f">field.</span></p>
+        </div></div>
+      </section>
+      <section class="panel" data-s="music" data-fx="music">
+        <canvas></canvas>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">field</div><div class="sub">128 BPM · A minor · 4/4 · type that keeps the beat</div></div>
+      </section>
+      <section class="panel" data-s="fashion">
+        <div class="deco d-fashion"></div>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">field</div><div class="sub">SS27 · Look 04 · Paris · editorial contrast</div></div>
+      </section>
+      <section class="panel" data-s="brutal">
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">style</div><div class="sub">Raw grid · hard shadows · no apologies</div></div>
+      </section>
+      <section class="panel" data-s="swiss">
+        <div class="deco d-swiss"></div>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">style</div><div class="sub">Zürich, 1957 · 12-column grid · objective type</div></div>
+      </section>
+      <section class="panel" data-s="y2k" data-fx="y2k">
+        <canvas></canvas>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">style</div><div class="sub">Chrome · lens flare · the year 2000 future</div></div>
+      </section>
+      <section class="panel" data-s="deco" data-fx="deco">
+        <canvas></canvas>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">style</div><div class="sub">Paris, 1925 · gold · geometry · sunbursts</div></div>
+      </section>
+      <section class="panel" data-s="glitch" data-fx="glitch">
+        <canvas></canvas><div class="deco d-scan"></div>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">style</div><div class="sub">RGB split · scanlines · signal error</div></div>
+      </section>
+      <section class="panel" data-s="japan">
+        <div class="deco d-japan"></div>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">culture</div><div class="sub">Hinomaru red · Mincho type · vertical reading</div></div>
+      </section>
+      <section class="panel" data-s="mexico">
+        <div class="deco d-picado"></div>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">culture</div><div class="sub">Papel picado · rosa mexicano · fiesta palette</div></div>
+      </section>
+      <section class="panel" data-s="arab" data-fx="arab">
+        <canvas></canvas><div class="deco d-arab"></div>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">culture</div><div class="sub">Eight-point star · girih geometry · calligraphic weight</div></div>
+      </section>
+      <section class="panel" data-s="vzla" data-fx="vzla">
+        <canvas></canvas>
+        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">culture</div><div class="sub">After Cruz-Diez &amp; Soto · kinetic stripes · colour in motion</div></div>
+      </section>
+      <section class="panel" data-s="end">
+        <div class="finale copy">
+          <span class="eyebrow">Web Developer · UX/UI Designer</span>
+          <h1>Tu <i>Nombre</i></h1>
+          <p>I design and build interfaces that take on the identity of whoever needs them: a clinic, a record label, a fashion house, a culture.</p>
+          <div class="recap"><span>3 fields</span><span>5 styles</span><span>4 cultures</span><span>1 system</span></div>
+          <div class="cta"><a class="btn solid" href="#track">View projects</a><a class="btn" href="#track">Let's talk</a></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="fin" id="fin" aria-label="We can work in any field">
+      <div class="fin-cam"><div class="dash" id="dash">
+        <aside class="side">
+          <div class="brand"><i></i>Ostra Studio</div>
+          <div class="nav"><span class="on">Overview</span><span>Projects</span><span>Invoices</span><span>Clients</span><span>Reports</span></div>
+          <div class="goals">
+            <div class="g"><b>Rebrand · Clínica Vida <span>72%</span></b><div><i style="width:72%"></i></div></div>
+            <div class="g"><b>App · Pulso Records <span>45%</span></b><div><i style="width:45%"></i></div></div>
+            <div class="g"><b>Web · Maison Lune <span>90%</span></b><div><i style="width:90%"></i></div></div>
+          </div>
+          <div class="me"><span class="av">TN</span>Tu Nombre</div>
+        </aside>
+        <div class="mainf">
+          <div class="top">
+            <div><h2>Q4 Overview</h2><p>Every project, one dashboard.</p></div>
+            <div class="search">Search clients, invoices…</div><div class="sendb">+ New project</div>
+          </div>
+          <div class="fgrid">
+            <div class="lcol">
+              <div class="tile bal" id="balTile">
+                <h3>Revenue · 2026</h3>
+                <div class="ranges" id="ranges"><span class="on">Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div>
+                <div class="amt" id="revAmt">$32,100<span>.00</span></div>
+                <span class="chg" id="revChg">↗ Q1 · first quarter</span>
+                <div class="chartArea" id="chartArea">
+                  <svg id="revSvg" viewBox="0 0 640 220" preserveAspectRatio="none" aria-hidden="true">
+                    <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF2D4B" stop-opacity=".38"/><stop offset="1" stop-color="#FF2D4B" stop-opacity="0"/></linearGradient></defs>
+                    <path id="area" fill="url(#ga)"/><path id="line" fill="none" stroke="#FF2D4B" stroke-width="3" stroke-linejoin="round"/><circle id="dot" r="7" fill="#FF2D4B"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="tile tx">
+                <h3>Recent invoices <small>See all</small></h3>
+                <ul>
+                  <li><span class="av">CV</span><div>Clínica Vida<em>Patient portal · Healthcare</em></div><div class="r">+$12,400<em>Paid</em></div></li>
+                  <li><span class="av">PR</span><div>Pulso Records<em>Streaming app · Music</em></div><div class="r">+$9,800<em>Paid</em></div></li>
+                  <li><span class="av">ML</span><div>Maison Lune<em>E-commerce · Fashion</em></div><div class="r">+$15,200<em>Sent</em></div></li>
+                  <li><span class="av">KB</span><div>Kumo Bank<em>Mobile banking · Finance</em></div><div class="r">+$21,000<em>Paid</em></div></li>
+                  <li><span class="av">TA</span><div>Tierra Alta<em>Booking site · Travel</em></div><div class="r">+$6,300<em>Draft</em></div></li>
+                </ul>
+              </div>
+            </div>
+            <div class="rcol">
+              <div class="tile budget">
+                <h3>Annual goal <small>2026</small></h3>
+                <div class="gauge"><svg viewBox="0 0 170 120" id="gauge" aria-hidden="true"></svg><b id="pct">86%</b><em>$128.4K of $150K</em></div>
+              </div>
+              <div class="tile qs">
+                <h3>Fields this year <small>12 industries</small></h3>
+                <div class="people"><div><span class="av">♥</span>Health</div><div><span class="av">♪</span>Music</div><div><span class="av">◐</span>Fashion</div><div><span class="av">$</span>Finance</div><div><span class="av">✈</span>Travel</div><div><span class="av">+7</span>More</div></div>
+                <div class="amtrow"><b>4.9<span> / 5</span></b><em>Client rating</em></div>
+              </div>
+              <div class="cardcol">
+                <div class="ccard" id="ccard">
+                  <div class="row"><b><i class="logo"></i>Ostra</b><span>STUDIO CARD</span></div>
+                  <div class="chip"></div>
+                  <div class="say"><small>We can work in</small><strong>any field</strong></div>
+                  <div class="row bot"><span>•••• 2026</span><span>WEB · UX/UI</span><span>Pro</span></div>
+                </div>
+                <div class="cardmeta">Projects shipped <span>38 this year</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <canvas id="bridge" aria-hidden="true"></canvas>
+      <div class="fin-hint" id="finHint">Scroll</div>
+    </section>
+
+    <div class="bar"><span class="mark">Tu Nombre</span><span class="meta">Web Developer &amp; UX/UI — 2026</span></div>
+    <div class="hud">
+      <div class="tag"><b id="tagA">Field 01 / 04</b><span id="tagB">Finance</span></div>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </div>
+    <div class="meter" id="meter"></div>
+  </div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
