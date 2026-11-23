@@ -14,7 +14,7 @@ const track=$("track"),strip=$("strip"),panels=[...strip.children],N=panels.leng
       tagA=$("tagA"),tagB=$("tagB"),dots=$("dots"),meter=$("meter");
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const HOLD=.45;          // share of each strip panel's scroll spent standing still
-const FIN_VH=7;          // the finance scene gets 7 screens of scroll
+const FIN_VH=5;          // the finance scene gets 5 screens of scroll (camera tour = first half)
 const STEP_VH=1.1;
 const medscroll=$("medscroll"),ctop=$("ctop"),dcur=$("dcur"),demoAp=$("demoAp"),bdetail=$("bdetail"),bdin=$("bdin"),medPanel=medscroll.parentElement;
 let MED_PX=0,MED_LEN=0,TL=[],ECG_PX=400; // ECG_PX: screen y of the page's heartbeat baseline
@@ -286,7 +286,8 @@ function finance(q,W,H){
 const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 let pos=0,active=-1,lastSc=0,AUTO=null;
 // the heartbeat hand-off plays by itself: it drives the real scroll position, so it stays perfectly in sync with scrolling
-function autoTo(target,ms){AUTO={};lenis.scrollTo(target+TRACK_TOP,{duration:ms/1000,easing:ease,lock:true,force:true,onComplete:()=>{AUTO=null}})}
+const easeQ=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2; // gentler ends, steady middle: the quarter stops stay readable
+function autoTo(target,ms,easing=ease){AUTO={};lenis.scrollTo(target+TRACK_TOP,{duration:ms/1000,easing,lock:true,force:true,onComplete:()=>{AUTO=null}})}
 let VW=innerWidth,VH=innerHeight,SCROLL_MAX=1,TRACK_TOP=0;
 function onScroll(){update(clamp(scrollY-TRACK_TOP,0,SCROLL_MAX))}
 function update(sc){
@@ -294,8 +295,9 @@ function update(sc){
   meter.style.transform=`scaleX(${sc/total})`;
   const finLen=FIN_VH*vh,q=clamp(sc/finLen),r=finance(q,W,H);
   let a;
-  const trig=finLen*(.5+.5*.47),asmEnd=finLen+TL[0].s1;
-  if(!AUTO&&!reduce&&lastSc<trig&&sc>=trig&&sc<asmEnd-2)autoTo(asmEnd,2200);
+  // one gesture is enough: as the camera lands on Revenue, the growth, the heartbeat and the clinic play by themselves
+  const trig=finLen*.46,asmEnd=finLen+TL[0].s1;
+  if(!AUTO&&!reduce&&lastSc<trig&&sc>=trig&&sc<asmEnd-2)autoTo(asmEnd,4200,easeQ);
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="zoom"),sw=TL.find(g=>g.k==="swipe"),zs=finLen+zg.s0,ze=finLen+sw.s1;
   if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,4600);
