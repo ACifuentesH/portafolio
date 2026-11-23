@@ -27,7 +27,7 @@ function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-
   const yS=clamp(offIn($("sec-services"),medscroll).y-vh*.2,0,MED_PX),bk=offIn($("sec-book"),medscroll),
         yB=clamp(bk.y-Math.max(30,(vh-bk.h)/2),yS,MED_PX),yA=MED_PX;
   // [kind, scroll length, page y from, page y to]
-  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",1.0*vh,yA,yA],["decode",1.3*vh,yA,yA],["settle",1.1*vh,yA,yA],["roll",1.9*vh,yA,yA],["fly",.8*vh,yA,yA],["end",.3*vh,yA,yA]];
+  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.7*vh,yA,yA],["decode",.8*vh,yA,yA],["settle",.8*vh,yA,yA],["roll",1.6*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.3*vh,yA,yA]];
   measureParts();
   let s=0;TL=segs.map(([k,len,y0,y1])=>{const o={k,s0:s,s1:s+len,y0,y1};s+=len;return o});MED_LEN=s;
   track.style.height=(FIN_VH*vh+MED_LEN+(N-1)*STEP_VH*vh+vh)+"px"}
@@ -121,7 +121,7 @@ function buildFly(){
   const gh=gr.h,bodyTop=gr.y-cr.y;
   let times="";for(let i=0;i<18;i++)times+=`<span style="top:${54+i*32}px">${8+(i>>1)}:${i%2?"30":"00"}</span>`;
   let track="";
-  for(let w=ROLL_WEEKS;w>=0;w--){ // future weeks to the left, so rolling right brings them in
+  for(let w=0;w<=ROLL_WEEKS;w++){ // chronological: rolling left brings the future in from the right
     for(let d=0;d<5;d++){const date=new Date(2026,10,23+7*w+d);
       let aps=APD.filter((a,i)=>(w?(i*7+w*3)%5:a.col)===d).map((a,i)=>{const row=w?((APD.indexOf(a)*5+w*11)%(19-a.span-1)):a.row;
         return`<div class="ap ${a.tone}${a.s1?" s1":""}" style="top:${54+row*32+2}px;height:${a.span*32-4}px">${a.html}</div>`}).join("");
@@ -132,32 +132,34 @@ function buildFly(){
     <div class="cf-view" style="left:50px"><div class="cf-track" id="cfTrack">${track}</div></div></div></div>`;
   FLY={cr,weekW,track:$("cfTrack"),lbl:$("cfLbl")}}
 let lastLbl="";
+const WINE=[74,10,30]; // the heartbeat red, darkened: the ground the calendar floats on before black
 function ending(s,W,H){
   const pl=phase("lift",s),pd=phase("decode",s),pt=phase("settle",s),pr=phase("roll",s),pf=phase("fly",s);
-  const dSpan=demoAp.querySelector("span");
-  if(pl<=0||demoAp.hidden){lift.hidden=true;calfly.hidden=true;gdim.style.opacity=0;blackout.style.opacity=0;demoAp.style.visibility="";
+  const dSpan=demoAp.querySelector("span");lift.hidden=true;gdim.style.opacity=0;
+  if(pl<=0||demoAp.hidden){calfly.hidden=true;blackout.style.opacity=0;demoAp.style.visibility="";
     if(dSpan&&dSpan.textContent!=="Pediatrics"){dSpan.textContent="Pediatrics";dSpan.className=""}return}
-  const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),L=b.x,T=b.y-y;
-  // 1. glass falls over the page, the booking lifts toward you in place (no travel, no tilt)
-  const up=smooth(pl)*(1-smooth(clamp(pt/.45))),S=1+1.6*up;
-  const onCard=pt<.5;
-  lift.hidden=!onCard;demoAp.style.visibility=onCard?"hidden":"";
-  if(onCard){Object.assign(lift.style,{left:L+"px",top:T+"px",width:b.w+"px",height:b.h+"px",
-      transform:`translate3d(0,${-14*up}px,0) scale(${S})`,boxShadow:`0 ${28*up}px ${70*up}px rgba(0,0,0,${.65*up}),0 0 0 ${up}px rgba(255,255,255,.25)`});
-    // 2. "Pediatrics" decodes into the line, same size
-    const txt=pd<=0?"Pediatrics":decode(pd,performance.now()/1000);
-    if(lfT.textContent!==txt)lfT.textContent=txt;lfT.className=pd>0?"lf-t":""}
-  if(dSpan){const want=pd>=1?SAY:"Pediatrics";if(dSpan.textContent!==want){dSpan.textContent=want;dSpan.className=pd>=1?"lf-dec":""}}
-  gdim.style.opacity=(smooth(pl)*(1-smooth(clamp(pt/.6)))).toFixed(3);
-  // 3. back in the calendar: the rest of the page goes black and the calendar detaches
-  const dark=smooth(clamp((pt-.25)/.6));blackout.style.opacity=dark.toFixed(3);
-  if(pt>=.25){if(!FLY)buildFly();calfly.hidden=false;
-    const lift2=smooth(clamp((pt-.25)/.75)),fly=smooth(pf);
+  // 1. camera dives at the booking with a 3D tilt back (like the dashboard), holds while the text decodes, then pulls back flat
+  const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),wx=b.x+b.w/2,wy=b.y+b.h/2;
+  const S1=Math.min(.34*W/b.w,.22*H/b.h),zin=smooth(pl),zout=smooth(clamp(pt/.55)),z=zin*(1-zout);
+  const sc=Math.pow(S1,z),px=lerp(wx,W*.5,z),py=lerp(wy-y,H*.46,z);
+  const rx=16*z,ry=-12*z,rz=2.5*z;
+  medscroll.style.transform=z>0?`translate3d(${px}px,${py}px,0) perspective(${1600/sc}px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${sc}) translate(${-wx}px,${-wy}px)`:`translate3d(0,${-y}px,0)`;
+  // 2. inside the booking itself, "Pediatrics" decodes into the line (same size)
+  if(dSpan){const want=pd<=0?"Pediatrics":pd>=.8?SAY:decode(pd/.8,performance.now()/1000);
+    if(dSpan.textContent!==want){dSpan.textContent=want;dSpan.className=pd>0?"lf-dec":""}}
+  // 3. pulled back: the page dissolves into wine, the calendar detaches as frosted glass
+  const fly=smooth(pf),dark=smooth(clamp((pt-.35)/.55));
+  const c=WINE.map(v=>Math.round(v*(1-fly)));
+  blackout.style.opacity=dark.toFixed(3);
+  blackout.style.background=`radial-gradient(120% 95% at 50% 45%, rgb(${c.join(",")}) 0%, rgb(${c.map(v=>Math.round(v*.35)).join(",")}) 55%, #000 100%)`;
+  if(pt>=.55){if(!FLY)buildFly();calfly.hidden=false;
+    const det=smooth(clamp((pt-.55)/.45));
+    calfly.style.setProperty("--glass",(1-.62*det).toFixed(3));
     Object.assign(calfly.style,{left:FLY.cr.x+"px",top:(FLY.cr.y-y)+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",
-      transform:`translate3d(0,${-fly*H*.08}px,0) scale(${(1-.06*lift2)*(1+1.1*fly)})`,opacity:(1-fly).toFixed(3),filter:fly>0?`blur(${(fly*14).toFixed(1)}px)`:""});
-    // 4. whole weeks roll to the right, faster then settling
-    const w=ROLL_WEEKS*ease(pr),off=-(ROLL_WEEKS-w)*FLY.weekW,speed=Math.sin(Math.PI*pr);
-    FLY.track.style.transform=`translate3d(${off.toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
+      transform:`translate3d(0,${-fly*H*.06}px,0) scale(${(1-.05*det)*(1+1.1*fly)})`,opacity:(1-fly).toFixed(3),filter:fly>0?`blur(${(fly*14).toFixed(1)}px)`:""});
+    // 4. whole weeks roll left, into the future
+    const w=ROLL_WEEKS*ease(pr),speed=Math.sin(Math.PI*pr);
+    FLY.track.style.transform=`translate3d(${(-w*FLY.weekW).toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
     const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}}
   else calfly.hidden=true;
 }
@@ -335,9 +337,9 @@ function update(sc){
     const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="fly"),zs=finLen+zg.s0,ze=finLen+sw.s1;
-  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,8200,easeQ);
+  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,5200,easeQ);
   lastSc=sc;
-  medscroll.style.transform=`translate3d(0,${-y}px,0)`;spy(y);demo(ms);assemble(ms,y);
+  if(phase("lift",ms)<=0)medscroll.style.transform=`translate3d(0,${-y}px,0)`;spy(y);demo(ms);assemble(ms,y);
   if(sc<finLen){pos=0;a=r>.75?1:0}
   else if(sc<restStart){pos=0;a=1}
   else{const f=(sc-restStart)/(STEP_VH*vh),i=Math.min(Math.floor(f),N-2),l=f-i;
