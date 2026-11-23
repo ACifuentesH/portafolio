@@ -1,5 +1,4 @@
 import "./style.css";
-import {AsciiStage} from "./ascii.js";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import {gsap} from "gsap";
@@ -28,7 +27,7 @@ function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-
   const yS=clamp(offIn($("sec-services"),medscroll).y-vh*.2,0,MED_PX),bk=offIn($("sec-book"),medscroll),
         yB=clamp(bk.y-Math.max(30,(vh-bk.h)/2),yS,MED_PX),yA=MED_PX;
   // [kind, scroll length, page y from, page y to]
-  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",2.6*vh,yA,yA],["ahold",.5*vh,yA,yA],["morph",2.2*vh,yA,yA],["end",.4*vh,yA,yA]];
+  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",2.2*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.3*vh,yA,yA]];
   measureParts();
   let s=0;TL=segs.map(([k,len,y0,y1])=>{const o={k,s0:s,s1:s+len,y0,y1};s+=len;return o});MED_LEN=s;
   track.style.height=(FIN_VH*vh+MED_LEN+(N-1)*STEP_VH*vh+vh)+"px"}
@@ -131,35 +130,10 @@ function buildFly(){medscroll.appendChild(blackout);medscroll.appendChild(calfly
   calfly.innerHTML=`<div class="cf-card"><div class="cal-h">${ccalEl.querySelector(".cal-h").innerHTML.replace('id="wkLbl"','id="cfLbl"').replace(/id="(caldet|wkPrev|wkNext)"/g,"")}</div>
     <div class="cf-body" style="top:${bodyTop}px;height:${gh}px"><div class="cf-lines" style="top:54px;left:50px"></div><div class="cf-times">${times}</div>
     <div class="cf-view" style="left:50px"><div class="cf-track" id="cfTrack">${track}</div></div></div></div>`;
-  FLY={cr,weekW,colW,dayW,bodyTop,track:$("cfTrack"),lbl:$("cfLbl")}}
+  FLY={cr,weekW,track:$("cfTrack"),lbl:$("cfLbl")}}
 let lastLbl="",IN_ENDING=false;
-// same appointments the detached calendar shows, as data for the character renderer
-function apsFor(w,d){const out=APD.filter((a,i)=>(w?(i*7+w*3)%5:a.col)===d).map(a=>({row:w?((APD.indexOf(a)*5+w*11)%(19-a.span-1)):a.row,span:a.span,tone:a.tone,
-  name:(a.html.match(/<b>([^<]*)<\/b>/)||[])[1]||""}));
-  if(!w&&d===3)out.push({row:12,span:2,tone:"t-z",name:SAY});return out}
-const INK={"t-b":150,"t-g":135,"t-n":95,"t-r":175,"t-m":160};
-const asciiCv=$("ascii"),stage=new AsciiStage(asciiCv);let CAL_A=null;
-// the detached calendar, drawn as ink at its on-screen rect R (scale s), rolled by `off` px
-function calendarScene(R,s,off){const stamps=[];
-  const draw=ctx=>{const X=R.x,Y=R.y,bx=X+20*s,by=Y+FLY.bodyTop*s,vx0=bx+50*s,vx1=X+R.w-20*s;
-    ctx.fillStyle="rgb(8,8,8)";ctx.strokeStyle="rgb(170,170,170)";ctx.lineWidth=3;
-    ctx.beginPath();ctx.roundRect(X,Y,R.w,R.h,22*s);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgb(80,80,80)";ctx.lineWidth=2;
-    for(let i=0;i<18;i++){const yy=by+(54+i*32)*s;ctx.beginPath();ctx.moveTo(vx0,yy);ctx.lineTo(vx1,yy);ctx.stroke();
-      if(i%2===0)stamps.push({x:bx,y:yy-5,text:`${8+(i>>1)}:00`})}
-    ctx.save();ctx.beginPath();ctx.rect(vx0,by,vx1-vx0,R.h);ctx.clip();
-    for(let w=0;w<=ROLL_WEEKS;w++)for(let d=0;d<5;d++){const cx0=vx0+((w*5+d)*FLY.colW+off)*s,cw=FLY.dayW*s;
-      if(cx0>vx1||cx0+cw<vx0)continue;
-      const date=new Date(2026,10,23+7*w+d);stamps.push({x:cx0+cw*.3,y:by+20*s,text:`${DOW[d]} ${date.getDate()}`,minX:vx0,maxX:vx1,upper:true});
-      for(const a of apsFor(w,d)){const top=by+(54+a.row*32+2)*s,h=(a.span*32-4)*s;
-        if(a.tone==="t-z"){ctx.fillStyle="rgb(255,0,0)"}else{const v=INK[a.tone]||120;ctx.fillStyle=`rgb(${v},${v},${v})`}
-        ctx.beginPath();ctx.roundRect(cx0,top,cw,h,8*s);ctx.fill();
-        stamps.push({x:cx0+6*s,y:top+4*s,text:a.name.slice(0,Math.max(4,Math.floor(cw/7)-1)),minX:vx0,maxX:Math.min(vx1,cx0+cw-7),red:a.tone==="t-z",keepSpace:true})}}
-    ctx.restore()};
-  stamps.push({x:R.x+20*s,y:R.y+22*s,text:"THIS WEEK",keepSpace:true});
-  return{draw,stamps}}
 function ending(s,W,H){
-  const pl=phase("lift",s),pd=phase("decode",s),pr=phase("roll",s);
+  const pl=phase("lift",s),pd=phase("decode",s),pr=phase("roll",s),pf=phase("fly",s);
   const dSpan=demoAp.querySelector("span");lift.hidden=true;gdim.style.opacity=0;
   IN_ENDING=pl>0&&!demoAp.hidden;
   if(!IN_ENDING){calfly.hidden=true;blackout.style.opacity=0;demoAp.style.visibility="";demoAp.style.willChange="";
@@ -179,28 +153,16 @@ function ending(s,W,H){
   if(dSpan){const want=pd<=0?"Pediatrics":pd>=.55?SAY:decode(pd/.55,performance.now()/1000);
     if(dSpan.textContent!==want){dSpan.textContent=want;dSpan.className=pd>0?"lf-dec":""}}
   // 3. while pulling back, the page falls to black and the calendar becomes a detached glass card whose weeks roll into the future
-  const ph=phase("ahold",s),pm=phase("morph",s);
   if(pr>0){if(!FLY)buildFly();calfly.hidden=false;
     blackout.style.opacity=smooth(clamp(pr/.4)).toFixed(3);blackout.style.background="#000";
-    const det=smooth(clamp((pr-.15)/.5));
+    const det=smooth(clamp((pr-.15)/.5)),fly=smooth(pf);
     calfly.style.setProperty("--glass",(1-.55*det).toFixed(3));
-    const sc=1-.05*det;
-    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:FLY.cr.y+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",transform:`scale(${sc})`,opacity:"",filter:""});
-    const rp=clamp((pr-.08)/.9),w=ROLL_WEEKS*ease(rp),speed=Math.sin(Math.PI*rp),off=-w*FLY.weekW;
-    FLY.track.style.transform=`translate3d(${off.toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
-    const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}
-    // 4. as the weeks run, the calendar turns into typed characters and the world goes from dark to white
-    const typ=smooth(clamp((pr-.5)/.38)),white=smooth(clamp((pr-.6)/.4));
-    asciiCv.style.opacity=typ.toFixed(3);
-    if(typ>0){const R={x:FLY.cr.x+FLY.cr.w*(1-sc)/2,y:FLY.cr.y-y+FLY.cr.h*(1-sc)/2,w:FLY.cr.w*sc,h:FLY.cr.h*sc};
-      const look={bg:mix("#000000","#FFFFFF",white),ink:mix("#EAF1F7","#111111",clamp((white-.35)/.3)),red:"#FF2D4B"};
-      if(pm<=0){stage.reset();const sc0=calendarScene(R,sc,off);const g=stage.sample(sc0.draw,sc0.stamps);stage.paint(g,look);
-        if(pr>=1)CAL_A=g}
-      else{ // 5. the characters lift off the calendar and settle into a silhouette
-        if(!CAL_A){const sc0=calendarScene(R,sc,-ROLL_WEEKS*FLY.weekW);CAL_A=stage.sample(sc0.draw,sc0.stamps)}
-        stage.morph(CAL_A,stage.silhouetteGrid(),pm,performance.now()/1000,{bg:"#FFFFFF",ink:"#111111",red:"#FF2D4B"})}}
-    calfly.style.opacity=(1-typ).toFixed(3)}
-  else{calfly.hidden=true;blackout.style.opacity=0;asciiCv.style.opacity=0}
+    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:FLY.cr.y+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",
+      transform:`translate3d(0,${-fly*H*.06}px,0) scale(${(1-.05*det)*(1+1.1*fly)})`,opacity:(1-fly).toFixed(3),filter:fly>0?`blur(${(fly*14).toFixed(1)}px)`:""});
+    const rp=clamp((pr-.12)/.85),w=ROLL_WEEKS*ease(rp),speed=Math.sin(Math.PI*rp);
+    FLY.track.style.transform=`translate3d(${(-w*FLY.weekW).toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
+    const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}}
+  else{calfly.hidden=true;blackout.style.opacity=0}
 }
 
 panels.forEach(p=>{const w=p.querySelector(".word");if(!w)return;const t=w.textContent;w.textContent="";
@@ -375,10 +337,8 @@ function update(sc){
     // Q1 -> Q4 climbs fast (2.6x); the heartbeat journey and the clinic build keep their calm pace
     const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
-  const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="ahold"),zs=finLen+zg.s0,ze=finLen+sw.s1;
-  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,6200,easeQ);
-  const mg=TL.find(g=>g.k==="morph"),ms0=finLen+mg.s0,ms1=finLen+mg.s1;
-  if(!AUTO&&!reduce&&lastSc<ms0+2&&sc>=ms0+2&&sc<ms1-2)autoTo(ms1,3000,easeQ);
+  const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="fly"),zs=finLen+zg.s0,ze=finLen+sw.s1;
+  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,5200,easeQ);
   lastSc=sc;
   if(phase("lift",ms)<=0)medscroll.style.transform=`translate3d(0,${-y}px,0)`;spy(y);demo(ms);assemble(ms,y);
   if(sc<finLen){pos=0;a=r>.75?1:0}
@@ -438,7 +398,7 @@ $("wkPrev").addEventListener("click",()=>{wk=Math.max(0,wk-1);renderWeek()});$("
 renderBook();
 
 layout();moveTab();
-function measure(){MEASURE.clear();RR0=null;FLY=null;CAL_A=null;layout();if(window.ScrollTrigger)ScrollTrigger.refresh();VW=fin.clientWidth;VH=fin.clientHeight;stage.resize(VW,VH);SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
+function measure(){MEASURE.clear();RR0=null;FLY=null;layout();if(window.ScrollTrigger)ScrollTrigger.refresh();VW=fin.clientWidth;VH=fin.clientHeight;SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
 measure();
 const lenis=new Lenis({lerp:.085,smoothWheel:true,touchMultiplier:1.1});
 lenis.on("scroll",ScrollTrigger.update);
