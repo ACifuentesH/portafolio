@@ -230,9 +230,9 @@ const bgc=p=>p<.5?mix("#0A0A0B","#2A2A30",p/.5):mix("#2A2A30",CLINIC_BG,(p-.5)/.
 let BR=0,RR=null,CAM=[0,0];const finCam=document.querySelector(".fin-cam"); // bridge progress; chart-area rect on screen, captured when the camera lands
 function drawBridge(time){
   const W=BW,H=BH,cx=bx;if(!W||!RR)return;cx.clearRect(0,0,W,H);
-  const r=BR,gp=clamp(r/.46),pp=clamp((r-.46)/.3),pe=smooth(pp);
+  const r=BR,gp=clamp(r/.46),pp=clamp((r-.46)/.5),pe=smooth(pp);
   // growth from Q1 to Q4 with stops: run, then rest at each quarter
-  const sN=gp*3,si=Math.min(Math.floor(sN),2),sf=sN>=3?1:1-Math.pow(1-(sN-si),3),g=sN>=3?1:.25+.25*(si+clamp(sf/.8));
+  const g=.25+.75*gp; // one continuous climb from Q1 to Q4, no stops
   const {v,qi}=setTile(g);
   const k=RR.w/SVW;                                   // design px -> screen px, so line weights match the SVG
   const P=u=>{const[x,y]=CU(u);return[RR.x+x*RR.w,RR.y+y*RR.h]};
@@ -274,10 +274,10 @@ function finance(q,W,H){
   else{RR=null;RR0=null;CAM=[0,0];setTile(.25)}
   const live=q>=LAND;
   bridge.style.opacity=live?1:0;revSvg.style.opacity=live?0:1;
-  const pe=smooth(clamp((BR-.46)/.3));
+  const pe=smooth(clamp((BR-.46)/.5));
   dash.style.opacity=1-clamp(pe/.3);
   fin.style.opacity=1;
-  fin.style.visibility=BR>=.8?"hidden":"visible";
+  fin.style.visibility=BR>=.97?"hidden":"visible";
   finHint.style.opacity=q<.04?.6:0;
   if(!live)CAM=[0,0];
   finCam.style.transform=`translate(${-CAM[0]}px,${-CAM[1]}px)`;
@@ -286,7 +286,7 @@ function finance(q,W,H){
 const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 let pos=0,active=-1,lastSc=0,AUTO=null;
 // the heartbeat hand-off plays by itself: it drives the real scroll position, so it stays perfectly in sync with scrolling
-const easeQ=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2; // gentler ends, steady middle: the quarter stops stay readable
+const easeQ=x=>.5*x+.5*(1-Math.cos(Math.PI*x))/2; // steady flow with soft ends: no burst in the middle, no stops
 function autoTo(target,ms,easing=ease){AUTO={};lenis.scrollTo(target+TRACK_TOP,{duration:ms/1000,easing,lock:true,force:true,onComplete:()=>{AUTO=null}})}
 let VW=innerWidth,VH=innerHeight,SCROLL_MAX=1,TRACK_TOP=0;
 function onScroll(){update(clamp(scrollY-TRACK_TOP,0,SCROLL_MAX))}
@@ -297,7 +297,7 @@ function update(sc){
   let a;
   // one gesture is enough: as the camera lands on Revenue, the growth, the heartbeat and the clinic play by themselves
   const trig=finLen*.46,asmEnd=finLen+TL[0].s1;
-  if(!AUTO&&!reduce&&lastSc<trig&&sc>=trig&&sc<asmEnd-2)autoTo(asmEnd,4200,easeQ);
+  if(!AUTO&&!reduce&&lastSc<trig&&sc>=trig&&sc<asmEnd-2)autoTo(asmEnd,6800,easeQ);
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="zoom"),sw=TL.find(g=>g.k==="swipe"),zs=finLen+zg.s0,ze=finLen+sw.s1;
   if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,4600);
