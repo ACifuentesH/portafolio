@@ -126,7 +126,7 @@ function buildFly(){medscroll.appendChild(blackout);medscroll.appendChild(calfly
     for(let d=0;d<5;d++){const date=new Date(2026,10,23+7*w+d);
       let aps=APD.filter((a,i)=>(w?(i*7+w*3)%5:a.col)===d).map((a,i)=>{const row=w?((APD.indexOf(a)*5+w*11)%(19-a.span-1)):a.row;
         return`<div class="ap ${a.tone}${a.s1?" s1":""}" style="top:${54+row*32+2}px;height:${a.span*32-4}px">${a.html}</div>`}).join("");
-      if(!w&&d===3)aps+=`<div class="ap t-z" style="top:${54+12*32+2}px;height:${2*32-4}px"><b>You</b><span>${SAY}</span><em>14:00</em></div>`;
+      if(!w&&d===3)aps+=`<div class="ap t-z" style="top:${54+12*32+2}px;height:${2*32-4}px"><b>You</b><span class="lf-dec">${SAY}</span><em>14:00</em></div>`;
       track+=`<div class="cf-day" style="width:${colW}px"><div class="dh${!w&&d===4?" on":""}" style="width:${dayW}px"><span>${DOW[d]}</span><b>${date.getDate()}</b></div><div style="position:absolute;top:0;left:0;width:${dayW}px;bottom:0">${aps}</div></div>`}}
   calfly.innerHTML=`<div class="cf-card"><div class="cal-h">${ccalEl.querySelector(".cal-h").innerHTML.replace('id="wkLbl"','id="cfLbl"').replace(/id="(caldet|wkPrev|wkNext)"/g,"")}</div>
     <div class="cf-body" style="top:${bodyTop}px;height:${gh}px"><div class="cf-lines" style="top:54px;left:50px"></div><div class="cf-times">${times}</div>
@@ -163,7 +163,7 @@ function ending(s,W,H){
   const dSpan=demoAp.querySelector("span");lift.hidden=true;gdim.style.opacity=0;
   IN_ENDING=pl>0&&!demoAp.hidden;
   if(!IN_ENDING){calfly.hidden=true;blackout.style.opacity=0;demoAp.style.visibility="";demoAp.style.willChange="";
-    if(dSpan&&dSpan.className){dSpan.textContent="Pediatrics";dSpan.className=""}return}
+    if(dSpan&&dSpan.textContent!=="Pediatrics"){dSpan.textContent="Pediatrics";dSpan.className=""}return}
   medscroll.style.willChange="";
   // 1. a hard 3D dive at the booking; it holds while the text decodes; the pull-back happens WHILE the weeks roll
   const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),wx=b.x+b.w/2,wy=b.y+b.h/2;
@@ -176,12 +176,8 @@ function ending(s,W,H){
   const wc=hold?"transform":"";if(demoAp.style.willChange!==wc)demoAp.style.willChange=wc;
   medscroll.style.transform=`translate3d(${(px/Z).toFixed(3)}px,${(py/Z).toFixed(3)}px,0) perspective(${(1300/Z).toFixed(2)}px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${(sc/Z).toFixed(4)}) translate(${-wx}px,${-wy}px)`;
   // 2. inside the booking, "Pediatrics" decodes into the line (same size)
-  // inside the booking, the line arrives word by word (each rises out of a blur), as before
-  if(dSpan){
-    if(pd<=0){if(dSpan.className){dSpan.className="";dSpan.textContent="Pediatrics"}}
-    else{if(dSpan.className!=="lf-words"){dSpan.className="lf-words";dSpan.innerHTML=SAY.split(" ").map(w=>`<i>${w}</i>`).join(" ")}
-      [...dSpan.children].forEach((el,i,a)=>{const r=smooth(clamp((pd/.6-i/a.length)*a.length/1.6));
-        el.style.opacity=r.toFixed(3);el.style.transform=r>=1?"none":`translateY(${((1-r)*.6).toFixed(3)}em)`;el.style.filter=r>=1?"none":`blur(${((1-r)*6).toFixed(2)}px)`})}}
+  if(dSpan){const want=pd<=0?"Pediatrics":pd>=.55?SAY:decode(pd/.55,performance.now()/1000);
+    if(dSpan.textContent!==want){dSpan.textContent=want;dSpan.className=pd>0?"lf-dec":""}}
   // 3. while pulling back, the page falls to black and the calendar becomes a detached glass card whose weeks roll into the future
   const ph=phase("ahold",s),pm=phase("morph",s);
   if(pr>0){if(!FLY)buildFly();calfly.hidden=false;
