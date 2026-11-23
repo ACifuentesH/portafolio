@@ -1,4 +1,9 @@
 import "./style.css";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
+import {gsap} from "gsap";
+import {ScrollTrigger} from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
 const LABELS=[
   ["Field 01 / 04","Finance"],["Field 02 / 04","Healthcare"],["Field 03 / 04","Music"],["Field 04 / 04","Fashion"],
   ["Style 01 / 05","Brutalism"],["Style 02 / 05","International Typographic Style"],["Style 03 / 05","Y2K"],["Style 04 / 05","Art Déco"],["Style 05 / 05","Glitch"],
@@ -167,6 +172,16 @@ function target(name,W,H){const b=name==="dash"?{x:0,y:0,w:1280,h:800}:cached("c
   const fitW=name==="dash"?.92:.78,fitH=name==="dash"?.86:.66;
   return{x:b.x+b.w/2,y:b.y+b.h/2,s:Math.min(fitW*W/b.w,fitH*H/b.h)}}
 const DZ=parseFloat(getComputedStyle(document.querySelector(".dash")).zoom)||1; // dashboard is laid out at DZx for sharp text
+const CAMP={};let camTL=null,camST=null;
+function applyCam(){const Z=DZ,c=CAMP,W=VW,H=VH;
+  dash.style.transform=`translate(${W/2/Z}px,${H/2/Z}px) perspective(${1800/Z}px) rotateX(${c.rx}deg) rotateY(${c.ry}deg) rotateZ(${c.rz}deg) scale(${c.s/Z}) translate(${-c.fx}px,${-c.fy}px)`}
+function buildCamera(){camST&&camST.kill();camTL&&camTL.kill();
+  const val=k=>{const g=target(k.f,VW,VH);return{rx:k.rx,ry:k.ry,rz:k.rz,s:g.s*k.z,fx:g.x,fy:g.y}};
+  Object.assign(CAMP,val(KEYS[0]));
+  camTL=gsap.timeline({paused:true,defaults:{ease:"power2.inOut"},onUpdate:applyCam});
+  for(let i=1;i<KEYS.length-1;i++)camTL.to(CAMP,{...val(KEYS[i]),duration:KEYS[i].q-KEYS[i-1].q},KEYS[i-1].q);
+  camST=ScrollTrigger.create({trigger:track,start:"top top",end:()=>"+="+FIN_VH*VH*.5,scrub:true,animation:camTL});
+  applyCam()}
 function camera(q,W,H){let i=0;while(i<KEYS.length-2&&q>KEYS[i+1].q)i++;
   const A=KEYS[i],B=KEYS[i+1],t=smooth(clamp((q-A.q)/(B.q-A.q)));
   const ta=target(A.f,W,H),tb=target(B.f,W,H);
@@ -175,7 +190,7 @@ function camera(q,W,H){let i=0;while(i<KEYS.length-2&&q>KEYS[i+1].q)i++;
 
 /* ---------- the revenue tile IS the animation: same curve in the tile's SVG and, once the camera lands, on the overlay canvas ---------- */
 let BW=0,BH=0;
-function sizeBridge(){const D=Math.min(devicePixelRatio||1,2);BW=bridge.clientWidth;BH=bridge.clientHeight;bridge.width=BW*D;bridge.height=BH*D;bx.setTransform(D,0,0,D,0,0)}
+function sizeBridge(){const D=Math.min(devicePixelRatio||1,1.5);BW=bridge.clientWidth;BH=bridge.clientHeight;bridge.width=BW*D;bridge.height=BH*D;bx.setTransform(D,0,0,D,0,0)}
 addEventListener("resize",sizeBridge);sizeBridge();
 const RED="#FF2D4B",Q=["Q1","Q2","Q3","Q4"],TOTAL=128400;
 const eio=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
@@ -253,7 +268,6 @@ function drawBridge(time){
 let RR0=null;
 function finance(q,W,H){
   const LAND=.5;
-  camera(Math.min(q,LAND),W,H);
   ccard.style.setProperty("--sheen",lerp(-60,60,clamp((q-.18)/.2))+"%");
   BR=clamp((q-LAND)/(1-LAND));
   if(q>=LAND){if(!RR0){const a=chartArea.getBoundingClientRect(),s=fin.getBoundingClientRect();RR0={x:a.left-s.left+CAM[0],y:a.top-s.top+CAM[1],w:a.width,h:a.height}}RR=RR0}
@@ -272,12 +286,7 @@ function finance(q,W,H){
 const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 let pos=0,active=-1,lastSc=0,AUTO=null;
 // the heartbeat hand-off plays by itself: it drives the real scroll position, so it stays perfectly in sync with scrolling
-function autoTo(target,ms){const from=scrollY,t0=performance.now();
-  const hold=e=>{if(e.type==="wheel"&&e.deltaY<-4){stop();return}e.preventDefault()}; // swallow forward momentum, let "back" through
-  const keys=e=>{if(["ArrowDown","PageDown","Space"," "].includes(e.key))e.preventDefault();else if(["ArrowUp","PageUp"].includes(e.key))stop()};
-  const stop=()=>{AUTO=null;removeEventListener("wheel",hold);removeEventListener("touchmove",hold);removeEventListener("keydown",keys)};
-  addEventListener("wheel",hold,{passive:false});addEventListener("touchmove",hold,{passive:false});addEventListener("keydown",keys);
-  AUTO={stop};(function step(now){if(!AUTO)return;const u=clamp((now-t0)/ms);scrollTo(0,lerp(from,target,ease(u)));u<1?requestAnimationFrame(step):stop()})(t0)}
+function autoTo(target,ms){AUTO={};lenis.scrollTo(target+TRACK_TOP,{duration:ms/1000,easing:ease,lock:true,force:true,onComplete:()=>{AUTO=null}})}
 let VW=innerWidth,VH=innerHeight,SCROLL_MAX=1,TRACK_TOP=0;
 function onScroll(){update(clamp(scrollY-TRACK_TOP,0,SCROLL_MAX))}
 function update(sc){
@@ -304,7 +313,7 @@ function update(sc){
 }
 /* ---------- clinic page: it works ---------- */
 const secY=id=>cached("sec-"+id,()=>{let e=$("sec-"+id),y=0;while(e&&e!==medscroll){y+=e.offsetTop;e=e.offsetParent}return{y,w:1}}).y;
-function goTo(id){const y=Math.min(Math.max(secY(id)-90,0),MED_PX);scrollTo({top:track.offsetTop+FIN_VH*innerHeight+sOfY(y),behavior:reduce?"auto":"smooth"})}
+function goTo(id){const y=Math.min(Math.max(secY(id)-90,0),MED_PX);lenis.scrollTo(track.offsetTop+FIN_VH*innerHeight+sOfY(y),{duration:1.4})}
 medscroll.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goTo(b.dataset.go)));
 const tabs=[...document.querySelectorAll("#ctabs button")];
 let spyCur="";function spy(y){let cur="overview";["services","book","agenda"].forEach(id=>{if(y+innerHeight*.45>=secY(id))cur=id});if(cur===spyCur)return;spyCur=cur;tabs.forEach(b=>b.classList.toggle("on",b.dataset.go===cur));moveTab()}
@@ -349,17 +358,19 @@ $("wkPrev").addEventListener("click",()=>{wk=Math.max(0,wk-1);renderWeek()});$("
 renderBook();
 
 layout();moveTab();
-function measure(){MEASURE.clear();RR0=null;frozen=null;layout();VW=fin.clientWidth;VH=fin.clientHeight;SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
+function measure(){MEASURE.clear();RR0=null;frozen=null;layout();if(window.ScrollTrigger)ScrollTrigger.refresh();VW=fin.clientWidth;VH=fin.clientHeight;SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
 measure();
-let SC_T=clamp(scrollY-TRACK_TOP,0,SCROLL_MAX),SC=SC_T,lastFrame=performance.now(),idle=0;
-addEventListener("scroll",()=>{SC_T=clamp(scrollY-TRACK_TOP,0,SCROLL_MAX)},{passive:true});
-addEventListener("resize",()=>{measure();size();sizeBridge();SC=SC_T=clamp(scrollY-TRACK_TOP,0,SCROLL_MAX);update(SC)});
-update(SC);
+const lenis=new Lenis({lerp:.085,smoothWheel:true,touchMultiplier:1.1});
+lenis.on("scroll",ScrollTrigger.update);
+gsap.ticker.add(time=>lenis.raf(time*1000));gsap.ticker.lagSmoothing(0);
+buildCamera();
+let SC=-1,idle=0;
+addEventListener("resize",()=>{measure();size();sizeBridge();buildCamera();ScrollTrigger.refresh();SC=-1});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{layout();onScroll()});
 
 /* ---------- canvas worlds ---------- */
 const FX=panels.map((p,k)=>p.dataset.fx?{k,type:p.dataset.fx,cv:p.querySelector("canvas"),cx:p.querySelector("canvas").getContext("2d"),W:0,H:0}:null).filter(Boolean);
-function size(){const D=Math.min(devicePixelRatio||1,2);FX.forEach(f=>{f.W=f.cv.clientWidth;f.H=f.cv.clientHeight;f.cv.width=f.W*D;f.cv.height=f.H*D;f.cx.setTransform(D,0,0,D,0,0)})}
+function size(){const D=Math.min(devicePixelRatio||1,1.5);FX.forEach(f=>{f.W=f.cv.clientWidth;f.H=f.cv.clientHeight;f.cv.width=f.W*D;f.cv.height=f.H*D;f.cx.setTransform(D,0,0,D,0,0)})}
 addEventListener("resize",size);size();
 
 function ecg(x){const t=x%1;
@@ -389,13 +400,13 @@ const DRAW={
     for(let x=0;x<W+w;x+=w){const k=Math.floor((x+shift)/w),band=Math.abs(Math.floor((x/W-d)*3+t*.05))%3;
       cx.fillStyle=cols[(k%cols.length+cols.length+band*2)%cols.length];cx.fillRect(x,0,w*.55,H)}}
 };
-function draw(ms){requestAnimationFrame(draw);const t=ms/1000; // schedule first: one bad frame can never stop the loop
-  const dt=Math.min(64,Math.max(0,ms-lastFrame));lastFrame=ms;
-  if(SC!==SC_T){const k=reduce?1:1-Math.exp(-dt/85);SC+=(SC_T-SC)*k;if(Math.abs(SC_T-SC)<.35)SC=SC_T;
+function draw(time){const t=time; // seconds, from the GSAP ticker (same clock as Lenis)
+  const sc=clamp(lenis.animatedScroll-TRACK_TOP,0,SCROLL_MAX);
+  if(Math.abs(sc-SC)>.01){SC=sc;
     if(!idle){dash.style.willChange="transform,opacity";medscroll.style.willChange="transform"}idle=12;
     try{update(SC)}catch(e){console.warn(e)}}
   else if(idle&&!--idle){dash.style.willChange="";medscroll.style.willChange=""} // at rest: let the browser re-raster crisp
   if(BR<1&&parseFloat(bridge.style.opacity||0)>0){try{drawBridge(t)}catch(e){console.warn(e)}}
   FX.forEach(f=>{const d=f.k-pos;if(Math.abs(d)>=1)return;
     try{f.cx.clearRect(0,0,f.W,f.H);DRAW[f.type](f.cx,f.W,f.H,reduce?0:t,d)}catch(e){console.warn(e)}})}
-requestAnimationFrame(draw);
+gsap.ticker.add(draw);
