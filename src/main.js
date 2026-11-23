@@ -27,7 +27,7 @@ function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-
   const yS=clamp(offIn($("sec-services"),medscroll).y-vh*.2,0,MED_PX),bk=offIn($("sec-book"),medscroll),
         yB=clamp(bk.y-Math.max(30,(vh-bk.h)/2),yS,MED_PX),yA=MED_PX;
   // [kind, scroll length, page y from, page y to]
-  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.7*vh,yA,yA],["decode",.8*vh,yA,yA],["settle",.8*vh,yA,yA],["roll",1.6*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.3*vh,yA,yA]];
+  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",2.2*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.3*vh,yA,yA]];
   measureParts();
   let s=0;TL=segs.map(([k,len,y0,y1])=>{const o={k,s0:s,s1:s+len,y0,y1};s+=len;return o});MED_LEN=s;
   track.style.height=(FIN_VH*vh+MED_LEN+(N-1)*STEP_VH*vh+vh)+"px"}
@@ -116,7 +116,7 @@ function weekLabel(w){const d=weekStart(w),e=new Date(2026,10,27+7*w);
   return d.getMonth()===e.getMonth()?`${MON[d.getMonth()]} ${d.getDate()} – ${e.getDate()}`:`${MON[d.getMonth()]} ${d.getDate()} – ${MON[e.getMonth()]} ${e.getDate()}`}
 // the detached calendar: an exact stand-in for the page calendar, but its days live on a horizontal track of whole weeks
 const ROLL_WEEKS=10;let FLY=null;
-function buildFly(){
+function buildFly(){medscroll.appendChild(blackout);medscroll.appendChild(calfly);
   const cr=offIn(ccalEl,medscroll),gr=offIn(calG,medscroll),gw=gr.w,dayW=(gw-44-5*6)/5,colW=dayW+6,weekW=colW*5;
   const gh=gr.h,bodyTop=gr.y-cr.y;
   let times="";for(let i=0;i<18;i++)times+=`<span style="top:${54+i*32}px">${8+(i>>1)}:${i%2?"30":"00"}</span>`;
@@ -131,37 +131,38 @@ function buildFly(){
     <div class="cf-body" style="top:${bodyTop}px;height:${gh}px"><div class="cf-lines" style="top:54px;left:50px"></div><div class="cf-times">${times}</div>
     <div class="cf-view" style="left:50px"><div class="cf-track" id="cfTrack">${track}</div></div></div></div>`;
   FLY={cr,weekW,track:$("cfTrack"),lbl:$("cfLbl")}}
-let lastLbl="";
-const WINE=[74,10,30]; // the heartbeat red, darkened: the ground the calendar floats on before black
+let lastLbl="",IN_ENDING=false;
 function ending(s,W,H){
-  const pl=phase("lift",s),pd=phase("decode",s),pt=phase("settle",s),pr=phase("roll",s),pf=phase("fly",s);
+  const pl=phase("lift",s),pd=phase("decode",s),pr=phase("roll",s),pf=phase("fly",s);
   const dSpan=demoAp.querySelector("span");lift.hidden=true;gdim.style.opacity=0;
-  if(pl<=0||demoAp.hidden){calfly.hidden=true;blackout.style.opacity=0;demoAp.style.visibility="";
+  IN_ENDING=pl>0&&!demoAp.hidden;
+  if(!IN_ENDING){calfly.hidden=true;blackout.style.opacity=0;demoAp.style.visibility="";demoAp.style.willChange="";
     if(dSpan&&dSpan.textContent!=="Pediatrics"){dSpan.textContent="Pediatrics";dSpan.className=""}return}
-  // 1. camera dives at the booking with a 3D tilt back (like the dashboard), holds while the text decodes, then pulls back flat
+  medscroll.style.willChange="";
+  // 1. a hard 3D dive at the booking; it holds while the text decodes; the pull-back happens WHILE the weeks roll
   const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),wx=b.x+b.w/2,wy=b.y+b.h/2;
-  const S1=Math.min(.34*W/b.w,.22*H/b.h),zin=smooth(pl),zout=smooth(clamp(pt/.55)),z=zin*(1-zout);
-  const sc=Math.pow(S1,z),px=lerp(wx,W*.5,z),py=lerp(wy-y,H*.46,z);
-  const rx=16*z,ry=-12*z,rz=2.5*z;
-  medscroll.style.transform=z>0?`translate3d(${px}px,${py}px,0) perspective(${1600/sc}px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${sc}) translate(${-wx}px,${-wy}px)`:`translate3d(0,${-y}px,0)`;
-  // 2. inside the booking itself, "Pediatrics" decodes into the line (same size)
-  if(dSpan){const want=pd<=0?"Pediatrics":pd>=.8?SAY:decode(pd/.8,performance.now()/1000);
+  const S1=Math.min(.52*W/b.w,.34*H/b.h),zin=1-Math.pow(1-pl,3),zout=smooth(clamp(pr/.8)),z=zin*(1-zout);
+  const sc=Math.pow(S1,z),px=lerp(wx,W*.5,z),py=lerp(wy-y,H*.5,z);
+  const rx=28*z,ry=-22*z,rz=5*z;
+  // big layers get rasterised at reduced resolution when magnified this much; once the camera settles on the booking,
+  // give the booking its own small layer so the browser redraws it at the final zoom (sharp text)
+  const hold=pl>=1&&pr<=0,Z=1;
+  const wc=hold?"transform":"";if(demoAp.style.willChange!==wc)demoAp.style.willChange=wc;
+  medscroll.style.transform=`translate3d(${(px/Z).toFixed(3)}px,${(py/Z).toFixed(3)}px,0) perspective(${(1300/Z).toFixed(2)}px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${(sc/Z).toFixed(4)}) translate(${-wx}px,${-wy}px)`;
+  // 2. inside the booking, "Pediatrics" decodes into the line (same size)
+  if(dSpan){const want=pd<=0?"Pediatrics":pd>=.55?SAY:decode(pd/.55,performance.now()/1000);
     if(dSpan.textContent!==want){dSpan.textContent=want;dSpan.className=pd>0?"lf-dec":""}}
-  // 3. pulled back: the page dissolves into wine, the calendar detaches as frosted glass
-  const fly=smooth(pf),dark=smooth(clamp((pt-.35)/.55));
-  const c=WINE.map(v=>Math.round(v*(1-fly)));
-  blackout.style.opacity=dark.toFixed(3);
-  blackout.style.background=`radial-gradient(120% 95% at 50% 45%, rgb(${c.join(",")}) 0%, rgb(${c.map(v=>Math.round(v*.35)).join(",")}) 55%, #000 100%)`;
-  if(pt>=.55){if(!FLY)buildFly();calfly.hidden=false;
-    const det=smooth(clamp((pt-.55)/.45));
-    calfly.style.setProperty("--glass",(1-.62*det).toFixed(3));
-    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:(FLY.cr.y-y)+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",
+  // 3. while pulling back, the page falls to black and the calendar becomes a detached glass card whose weeks roll into the future
+  if(pr>0){if(!FLY)buildFly();calfly.hidden=false;
+    blackout.style.opacity=smooth(clamp(pr/.4)).toFixed(3);blackout.style.background="#000";
+    const det=smooth(clamp((pr-.15)/.5)),fly=smooth(pf);
+    calfly.style.setProperty("--glass",(1-.55*det).toFixed(3));
+    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:FLY.cr.y+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",
       transform:`translate3d(0,${-fly*H*.06}px,0) scale(${(1-.05*det)*(1+1.1*fly)})`,opacity:(1-fly).toFixed(3),filter:fly>0?`blur(${(fly*14).toFixed(1)}px)`:""});
-    // 4. whole weeks roll left, into the future
-    const w=ROLL_WEEKS*ease(pr),speed=Math.sin(Math.PI*pr);
+    const rp=clamp((pr-.12)/.85),w=ROLL_WEEKS*ease(rp),speed=Math.sin(Math.PI*rp);
     FLY.track.style.transform=`translate3d(${(-w*FLY.weekW).toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
     const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}}
-  else calfly.hidden=true;
+  else{calfly.hidden=true;blackout.style.opacity=0}
 }
 
 panels.forEach(p=>{const w=p.querySelector(".word");if(!w)return;const t=w.textContent;w.textContent="";
@@ -442,7 +443,7 @@ const DRAW={
 function draw(time){const t=time; // seconds, from the GSAP ticker (same clock as Lenis)
   const sc=clamp(lenis.animatedScroll-TRACK_TOP,0,SCROLL_MAX);
   if(Math.abs(sc-SC)>.01){SC=sc;
-    if(!idle){dash.style.willChange="transform,opacity";medscroll.style.willChange="transform"}idle=12;
+    if(!idle){dash.style.willChange="transform,opacity";medscroll.style.willChange=IN_ENDING?"":"transform"}idle=12;
     try{update(SC)}catch(e){console.warn(e)}}
   else if(idle&&!--idle){dash.style.willChange="";medscroll.style.willChange=""} // at rest: let the browser re-raster crisp
   if(BR<1&&parseFloat(bridge.style.opacity||0)>0){try{drawBridge(t)}catch(e){console.warn(e)}}

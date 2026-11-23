@@ -329,14 +329,14 @@ body{background:var(--ink);color:var(--ivory);font-family:var(--sans);margin:0;-
 /* the booking, opened */
 /* ending: glass over the page, the booking lifts in place, then the calendar detaches and rolls */
 .gdim{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0;background:rgba(2,8,14,.62);-webkit-backdrop-filter:blur(10px) saturate(120%);backdrop-filter:blur(10px) saturate(120%)}
-.blackout{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;background:#000}
+.blackout{position:absolute;top:-3000px;bottom:-3000px;left:-4000px;right:-4000px;z-index:30;pointer-events:none;opacity:0;background:#000}
 .lift{position:absolute;z-index:9;pointer-events:none;transform-origin:50% 50%;will-change:transform;border-radius:10px;background:#FF2D4B;color:#fff;font-family:var(--sans);
   box-shadow:0 0 0 0 rgba(0,0,0,0)}
 .lift>div{position:absolute;inset:0;display:flex;flex-direction:column;padding:5px 8px;font-size:10.5px;line-height:1.25;overflow:hidden}
 .lift b{font-weight:700;font-size:11px}
 .lift em{font-style:normal;opacity:.6;margin-top:auto}
 .lf-t,.ap .lf-dec{font-family:var(--mono);letter-spacing:.06em;font-size:10px;white-space:normal}
-.calfly{position:absolute;z-index:7;padding:0!important;min-height:0!important;background:transparent!important;pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
+.calfly{position:absolute;z-index:31;padding:0!important;min-height:0!important;background:transparent!important;pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
 .cf-card{position:absolute;inset:0;border-radius:22px;background:rgb(12 30 43 / var(--glass,1));border:1px solid rgba(255,255,255,calc(.08 + .1 * (1 - var(--glass,1))));-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);box-shadow:0 50px 120px -30px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.08);padding:20px;overflow:hidden}
 .cf-body{position:absolute;left:20px;right:20px;bottom:20px;overflow:hidden}
 .cf-times{position:absolute;left:0;top:0;bottom:0;width:44px}
