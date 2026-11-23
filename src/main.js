@@ -115,7 +115,7 @@ function weekStart(w){return new Date(2026,10,23+7*w)}
 function weekLabel(w){const d=weekStart(w),e=new Date(2026,10,27+7*w);
   return d.getMonth()===e.getMonth()?`${MON[d.getMonth()]} ${d.getDate()} – ${e.getDate()}`:`${MON[d.getMonth()]} ${d.getDate()} – ${MON[e.getMonth()]} ${e.getDate()}`}
 // the detached calendar: an exact stand-in for the page calendar, but its days live on a horizontal track of whole weeks
-const ROLL_WEEKS=10;let FLY=null;
+const ROLL_WEEKS=16;let FLY=null;
 function buildFly(){medscroll.appendChild(blackout);medscroll.appendChild(calfly);
   const cr=offIn(ccalEl,medscroll),gr=offIn(calG,medscroll),gw=gr.w,dayW=(gw-44-5*6)/5,colW=dayW+6,weekW=colW*5;
   const gh=gr.h,bodyTop=gr.y-cr.y;
@@ -155,12 +155,13 @@ function ending(s,W,H){
   // 3. while pulling back, the page falls to black and the calendar becomes a detached glass card whose weeks roll into the future
   if(pr>0){if(!FLY)buildFly();calfly.hidden=false;
     blackout.style.opacity=smooth(clamp(pr/.4)).toFixed(3);blackout.style.background="#000";
-    const det=smooth(clamp((pr-.15)/.5)),fly=smooth(pf);
+    const det=smooth(clamp((pr-.15)/.5)),fade=smooth(pf);
     calfly.style.setProperty("--glass",(1-.55*det).toFixed(3));
-    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:FLY.cr.y+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",
-      transform:`translate3d(0,${-fly*H*.06}px,0) scale(${(1-.05*det)*(1+1.1*fly)})`,opacity:(1-fly).toFixed(3),filter:fly>0?`blur(${(fly*14).toFixed(1)}px)`:""});
-    const rp=clamp((pr-.12)/.85),w=ROLL_WEEKS*ease(rp),speed=Math.sin(Math.PI*rp);
-    FLY.track.style.transform=`translate3d(${(-w*FLY.weekW).toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
+    // no expand, no fly-off: the card stays put and simply fades into the black while the weeks keep going
+    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:FLY.cr.y+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",transform:"",opacity:(1-fade).toFixed(3),filter:""});
+    // one continuous run across the roll and the fade: speeds up, then keeps rolling into the future
+    const u=clamp((pr*2.2+pf*.6)/2.8-.04)/.96,w=ROLL_WEEKS*Math.pow(u,1.35),speed=clamp(u/.25);
+    FLY.track.style.transform=`translate3d(${(-w*FLY.weekW).toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*4).toFixed(1)}px)`:"";
     const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}}
   else{calfly.hidden=true;blackout.style.opacity=0}
 }
