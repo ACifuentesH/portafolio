@@ -27,7 +27,7 @@ function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-
   const yS=clamp(offIn($("sec-services"),medscroll).y-vh*.2,0,MED_PX),bk=offIn($("sec-book"),medscroll),
         yB=clamp(bk.y-Math.max(30,(vh-bk.h)/2),yS,MED_PX),yA=MED_PX;
   // [kind, scroll length, page y from, page y to]
-  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["zoom",1.1*vh,yA,yA],["words",1.3*vh,yA,yA],["swipe",1.6*vh,yA,yA],["end",.3*vh,yA,yA]];
+  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",1.0*vh,yA,yA],["decode",1.3*vh,yA,yA],["settle",1.1*vh,yA,yA],["roll",1.9*vh,yA,yA],["fly",.8*vh,yA,yA],["end",.3*vh,yA,yA]];
   measureParts();
   let s=0;TL=segs.map(([k,len,y0,y1])=>{const o={k,s0:s,s1:s+len,y0,y1};s+=len;return o});MED_LEN=s;
   track.style.height=(FIN_VH*vh+MED_LEN+(N-1)*STEP_VH*vh+vh)+"px"}
@@ -80,7 +80,7 @@ const ctr=el=>{const b=cached(el,()=>offIn(el,medscroll));return[b.x+b.w*.55,b.y
 let demoStage=-1;
 function demo(s){
   const W=medPanel.clientWidth,H=medPanel.clientHeight;
-  const ps=phase("svc",s),pb=phase("book",s),pc=phase("cal",s),pz=phase("zoom",s);
+  const ps=phase("svc",s),pb=phase("book",s),pc=phase("cal",s),pz=phase("lift",s);
   const P0=ctr(document.querySelector('[data-go="book"].cpill')),Pp=ctr(document.querySelector('.svc[data-svc="Pediatrics"] .go')),
         Pd=ctr(document.querySelector('#bdays [data-d="3"]')),Pt=ctr(document.querySelector('#bslots [data-r="12"]')),
         Pc=ctr($("bconfirm")),Pa=ctr(demoAp.hidden?document.querySelector(".ln:nth-of-type(1)")||demoAp:demoAp);
@@ -102,41 +102,64 @@ function demo(s){
     if(stage>=5)$("caldet").innerHTML="<b>You · Pediatrics</b><span>Thu 26 · 14:00 · Dra. Márquez</span>"}
   ending(s,W,H);
 }
-/* ---------- ending: fly into the booking, it opens, then the weeks fly by ---------- */
-const bdSay=[...document.querySelectorAll("#bdSay span")],calG=$("calg"),wkLbl=$("wkLbl"),MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const APS=[...document.querySelectorAll(".cal-g .ap:not(#demoAp)")].map(el=>({el,c:el.style.gridColumn,r:el.style.gridRow}));
-let shownWeek=0,frozen=null;
-function weekLabel(w){const d=new Date(2026,10,23+7*w),e=new Date(2026,10,27+7*w);
+/* ---------- ending: glass, the booking lifts and decodes, the calendar detaches, weeks roll, black ---------- */
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],DOW=["Mon","Tue","Wed","Thu","Fri"];
+const calG=$("calg"),lift=bdetail,lfT=$("lfT"),gdim=$("gdim"),blackout=$("blackout"),calfly=$("calfly"),ccalEl=$("sec-agenda");
+const SAY="No, I really mean any field.",GLY="*|%:#~[&>+.}=/@<^";
+const APD=[...document.querySelectorAll(".cal-g .ap:not(#demoAp)")].map(el=>{const r=el.style.gridRow.split("/"),span=+(r[1]||"span 1").replace("span","");
+  return{col:+el.style.gridColumn-2,row:+r[0]-2,span,tone:[...el.classList].find(c=>c.startsWith("t-")),s1:el.classList.contains("s1"),html:el.innerHTML}});
+// Swishy-style decode: resolved letters on the left, a short run of shifting glyphs at the edge
+function decode(p,time){const n=SAY.length,head=p*(n+5);let o="";
+  for(let i=0;i<n;i++){if(i<head-5)o+=SAY[i];else if(i<head)o+=SAY[i]===" "?" ":GLY[(i*7+Math.floor(time*22))%GLY.length];else break}return o}
+function weekStart(w){return new Date(2026,10,23+7*w)}
+function weekLabel(w){const d=weekStart(w),e=new Date(2026,10,27+7*w);
   return d.getMonth()===e.getMonth()?`${MON[d.getMonth()]} ${d.getDate()} – ${e.getDate()}`:`${MON[d.getMonth()]} ${d.getDate()} – ${MON[e.getMonth()]} ${e.getDate()}`}
-function showWeek(w){if(w===shownWeek)return;shownWeek=w;
-  wkLbl.textContent=w?weekLabel(w):"Nov 23 – 27";
-  document.querySelectorAll(".dh b").forEach((b,i)=>{b.textContent=new Date(2026,10,23+7*w+i).getDate()});
-  APS.forEach((a,i)=>{if(!w){a.el.style.gridColumn=a.c;a.el.style.gridRow=a.r;return}
-    const span=a.r.split("span ")[1]||"1";a.el.style.gridColumn=2+((i*7+w*3)%5);a.el.style.gridRow=`${2+((i*5+w*11)%(19-span))}/span ${span}`});
-  const d=new Date(2026,10,26+7*w);$("bdDate").textContent=`${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`}
+// the detached calendar: an exact stand-in for the page calendar, but its days live on a horizontal track of whole weeks
+const ROLL_WEEKS=10;let FLY=null;
+function buildFly(){
+  const cr=offIn(ccalEl,medscroll),gr=offIn(calG,medscroll),gw=gr.w,dayW=(gw-44-5*6)/5,colW=dayW+6,weekW=colW*5;
+  const gh=gr.h,bodyTop=gr.y-cr.y;
+  let times="";for(let i=0;i<18;i++)times+=`<span style="top:${54+i*32}px">${8+(i>>1)}:${i%2?"30":"00"}</span>`;
+  let track="";
+  for(let w=ROLL_WEEKS;w>=0;w--){ // future weeks to the left, so rolling right brings them in
+    for(let d=0;d<5;d++){const date=new Date(2026,10,23+7*w+d);
+      let aps=APD.filter((a,i)=>(w?(i*7+w*3)%5:a.col)===d).map((a,i)=>{const row=w?((APD.indexOf(a)*5+w*11)%(19-a.span-1)):a.row;
+        return`<div class="ap ${a.tone}${a.s1?" s1":""}" style="top:${54+row*32+2}px;height:${a.span*32-4}px">${a.html}</div>`}).join("");
+      if(!w&&d===3)aps+=`<div class="ap t-z" style="top:${54+12*32+2}px;height:${2*32-4}px"><b>You</b><span class="lf-dec">${SAY}</span><em>14:00</em></div>`;
+      track+=`<div class="cf-day" style="width:${colW}px"><div class="dh${!w&&d===4?" on":""}" style="width:${dayW}px"><span>${DOW[d]}</span><b>${date.getDate()}</b></div><div style="position:absolute;top:0;left:0;width:${dayW}px;bottom:0">${aps}</div></div>`}}
+  calfly.innerHTML=`<div class="cf-card"><div class="cal-h">${ccalEl.querySelector(".cal-h").innerHTML.replace('id="wkLbl"','id="cfLbl"').replace(/id="(caldet|wkPrev|wkNext)"/g,"")}</div>
+    <div class="cf-body" style="top:${bodyTop}px;height:${gh}px"><div class="cf-lines" style="top:54px;left:50px"></div><div class="cf-times">${times}</div>
+    <div class="cf-view" style="left:50px"><div class="cf-track" id="cfTrack">${track}</div></div></div></div>`;
+  FLY={cr,weekW,track:$("cfTrack"),lbl:$("cfLbl")}}
+let lastLbl="";
 function ending(s,W,H){
-  const pz=phase("zoom",s),pw=phase("words",s),pk=phase("swipe",s);
-  if(pz<=0||demoAp.hidden){bdetail.hidden=true;demoAp.style.visibility="";calG.style.transform="";calG.style.filter="";showWeek(0);frozen=null;return}
-  const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),wx=b.x+b.w/2,wy=b.y+b.h/2;
-  const S1=Math.min(.36*W/b.w,.2*H/b.h),ez=1-Math.pow(1-pz,3);
-  const pull=smooth(clamp(pk/.3)),sc=Math.pow(S1,ez)*lerp(1,.62,pull),rot=-4*Math.sin(Math.PI*clamp(pz*1.1));
-  const tx=W*.5,ty=H*.3,px=lerp(wx,tx,ez),py=lerp(wy-y,ty,ez);
-  medscroll.style.transform=`translate3d(${px}px,${py}px,0) rotate(${rot}deg) scale(${sc}) translate(${-wx}px,${-wy}px)`;
-  // the booking card: pinned where the block landed, then stretches down and talks
-  if(pz>=.98){
-    if(!frozen){const pr=medPanel.getBoundingClientRect(),r=demoAp.getBoundingClientRect();frozen={L:r.left-pr.left,T:r.top-pr.top,w:r.width,h:r.height}}
-    demoAp.style.visibility="hidden";bdetail.hidden=false;
-    const grow=smooth(clamp(pw/.3)),hh=lerp(frozen.h,Math.max(frozen.h*2.3,frozen.w*.62),grow);
-    Object.assign(bdetail.style,{left:frozen.L+"px",top:frozen.T+"px",width:frozen.w+"px",height:hh+"px"});
-    bdin.style.opacity=1;
-    bdSay.forEach((el,i)=>{const r=smooth(clamp((pw-.3-i*.1)/.14));el.style.opacity=r;el.style.transform=r>=1?"none":`translateY(${(1-r)*.5}em)`;el.style.filter=r>=1?"none":`blur(${(1-r)*10}px)`});
-  }else{bdetail.hidden=true;demoAp.style.visibility="";frozen=null}
-  // weeks fly to the right, faster and faster, then settle
-  const wk=14*ease(clamp((pk-.18)/.78)),wi=Math.floor(wk),fr=wk-wi,speed=pk>.18&&pk<.96?Math.sin(Math.PI*clamp((pk-.18)/.78)):0;
-  showWeek(pk>=.96?14:wi);
-  calG.style.transform=pk>0&&pk<.96?`translate3d(${(fr*cached("calW",()=>({w:calG.offsetWidth})).w*.9).toFixed(1)}px,0,0)`:"";
-  calG.style.filter=speed>.05?`blur(${(speed*7).toFixed(1)}px)`:"";
-  calG.style.opacity=pk>0&&pk<.96?(1-Math.abs(fr-.5)*.5).toFixed(2):"";
+  const pl=phase("lift",s),pd=phase("decode",s),pt=phase("settle",s),pr=phase("roll",s),pf=phase("fly",s);
+  const dSpan=demoAp.querySelector("span");
+  if(pl<=0||demoAp.hidden){lift.hidden=true;calfly.hidden=true;gdim.style.opacity=0;blackout.style.opacity=0;demoAp.style.visibility="";
+    if(dSpan&&dSpan.textContent!=="Pediatrics"){dSpan.textContent="Pediatrics";dSpan.className=""}return}
+  const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),L=b.x,T=b.y-y;
+  // 1. glass falls over the page, the booking lifts toward you in place (no travel, no tilt)
+  const up=smooth(pl)*(1-smooth(clamp(pt/.45))),S=1+1.6*up;
+  const onCard=pt<.5;
+  lift.hidden=!onCard;demoAp.style.visibility=onCard?"hidden":"";
+  if(onCard){Object.assign(lift.style,{left:L+"px",top:T+"px",width:b.w+"px",height:b.h+"px",
+      transform:`translate3d(0,${-14*up}px,0) scale(${S})`,boxShadow:`0 ${28*up}px ${70*up}px rgba(0,0,0,${.65*up}),0 0 0 ${up}px rgba(255,255,255,.25)`});
+    // 2. "Pediatrics" decodes into the line, same size
+    const txt=pd<=0?"Pediatrics":decode(pd,performance.now()/1000);
+    if(lfT.textContent!==txt)lfT.textContent=txt;lfT.className=pd>0?"lf-t":""}
+  if(dSpan){const want=pd>=1?SAY:"Pediatrics";if(dSpan.textContent!==want){dSpan.textContent=want;dSpan.className=pd>=1?"lf-dec":""}}
+  gdim.style.opacity=(smooth(pl)*(1-smooth(clamp(pt/.6)))).toFixed(3);
+  // 3. back in the calendar: the rest of the page goes black and the calendar detaches
+  const dark=smooth(clamp((pt-.25)/.6));blackout.style.opacity=dark.toFixed(3);
+  if(pt>=.25){if(!FLY)buildFly();calfly.hidden=false;
+    const lift2=smooth(clamp((pt-.25)/.75)),fly=smooth(pf);
+    Object.assign(calfly.style,{left:FLY.cr.x+"px",top:(FLY.cr.y-y)+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",
+      transform:`translate3d(0,${-fly*H*.08}px,0) scale(${(1-.06*lift2)*(1+1.1*fly)})`,opacity:(1-fly).toFixed(3),filter:fly>0?`blur(${(fly*14).toFixed(1)}px)`:""});
+    // 4. whole weeks roll to the right, faster then settling
+    const w=ROLL_WEEKS*ease(pr),off=-(ROLL_WEEKS-w)*FLY.weekW,speed=Math.sin(Math.PI*pr);
+    FLY.track.style.transform=`translate3d(${off.toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*5).toFixed(1)}px)`:"";
+    const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}}
+  else calfly.hidden=true;
 }
 
 panels.forEach(p=>{const w=p.querySelector(".word");if(!w)return;const t=w.textContent;w.textContent="";
@@ -311,8 +334,8 @@ function update(sc){
     // Q1 -> Q4 climbs fast (2.6x); the heartbeat journey and the clinic build keep their calm pace
     const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
-  const zg=TL.find(g=>g.k==="zoom"),sw=TL.find(g=>g.k==="swipe"),zs=finLen+zg.s0,ze=finLen+sw.s1;
-  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,4600);
+  const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="fly"),zs=finLen+zg.s0,ze=finLen+sw.s1;
+  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,8200,easeQ);
   lastSc=sc;
   medscroll.style.transform=`translate3d(0,${-y}px,0)`;spy(y);demo(ms);assemble(ms,y);
   if(sc<finLen){pos=0;a=r>.75?1:0}
@@ -372,7 +395,7 @@ $("wkPrev").addEventListener("click",()=>{wk=Math.max(0,wk-1);renderWeek()});$("
 renderBook();
 
 layout();moveTab();
-function measure(){MEASURE.clear();RR0=null;frozen=null;layout();if(window.ScrollTrigger)ScrollTrigger.refresh();VW=fin.clientWidth;VH=fin.clientHeight;SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
+function measure(){MEASURE.clear();RR0=null;FLY=null;layout();if(window.ScrollTrigger)ScrollTrigger.refresh();VW=fin.clientWidth;VH=fin.clientHeight;SCROLL_MAX=Math.max(1,track.offsetHeight-innerHeight);TRACK_TOP=track.offsetTop}
 measure();
 const lenis=new Lenis({lerp:.085,smoothWheel:true,touchMultiplier:1.1});
 lenis.on("scroll",ScrollTrigger.update);

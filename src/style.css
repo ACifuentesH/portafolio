@@ -237,8 +237,6 @@ body{background:var(--ink);color:var(--ivory);font-family:var(--sans);margin:0;-
 .cc::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.09) 50%,transparent 65%);transform:translateX(-130%)}
 .cc:hover::after,.cc.picked::after,.book.booked::after{animation:shine 1.1s cubic-bezier(.3,0,.2,1)}
 @keyframes shine{to{transform:translateX(130%)}}
-.svc::before{content:"";position:absolute;left:0;top:20px;bottom:20px;width:3px;border-radius:0 3px 3px 0;background:var(--c-red);transform:scaleY(0);transition:transform .45s cubic-bezier(.3,1.4,.4,1);box-shadow:0 0 14px rgba(255,45,75,.9)}
-.svc.picked::before{transform:scaleY(1)}
 .svc .cc-d{position:relative;transition:background .3s,border-color .3s,color .3s}
 .svc.picked .cc-d{background:var(--c-red);border-color:var(--c-red);color:transparent}
 .svc .cc-d::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:12px;transform:scale(0) rotate(-40deg);transition:transform .45s cubic-bezier(.3,1.6,.4,1)}
@@ -329,13 +327,26 @@ body{background:var(--ink);color:var(--ivory);font-family:var(--sans);margin:0;-
 .dcur svg{width:100%;height:100%;display:block}
 .dcur i{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;border:2px solid var(--c-ink,#fff);opacity:0}
 /* the booking, opened */
-.bdetail{position:absolute;z-index:8;overflow:hidden;background:#FF2D4B;color:#fff;font-family:var(--sans);border-radius:14px;box-shadow:0 40px 90px -20px rgba(255,45,75,.55)}
-.bd-in{position:absolute;inset:0;display:flex;flex-direction:column;padding:clamp(14px,2vw,24px)}
-.bd-top{display:flex;justify-content:space-between;gap:12px;font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;opacity:.9}
-.bd-top b{font-weight:700}
-.bd-say{margin:auto 0 0;font-size:clamp(2rem,4.6vw,4.6rem);font-weight:800;letter-spacing:-.045em;line-height:.95;text-wrap:balance}
-.bd-say span{display:inline-block;opacity:0;transform:translateY(.5em);filter:blur(10px)}
-.bd-say .bd-f{font-family:var(--display);font-style:italic;font-weight:400;letter-spacing:-.02em}
+/* ending: glass over the page, the booking lifts in place, then the calendar detaches and rolls */
+.gdim{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0;background:rgba(2,8,14,.62);-webkit-backdrop-filter:blur(10px) saturate(120%);backdrop-filter:blur(10px) saturate(120%)}
+.blackout{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;background:#000}
+.lift{position:absolute;z-index:9;pointer-events:none;transform-origin:50% 50%;will-change:transform;border-radius:10px;background:#FF2D4B;color:#fff;font-family:var(--sans);
+  box-shadow:0 0 0 0 rgba(0,0,0,0)}
+.lift>div{position:absolute;inset:0;display:flex;flex-direction:column;padding:5px 8px;font-size:10.5px;line-height:1.25;overflow:hidden}
+.lift b{font-weight:700;font-size:11px}
+.lift em{font-style:normal;opacity:.6;margin-top:auto}
+.lf-t,.ap .lf-dec{font-family:var(--mono);letter-spacing:.06em;font-size:10px;white-space:normal}
+.calfly{position:absolute;z-index:7;padding:0!important;min-height:0!important;background:transparent!important;pointer-events:none;transform-origin:50% 50%;will-change:transform,opacity}
+.cf-card{position:absolute;inset:0;border-radius:22px;background:rgb(12 30 43);border:1px solid rgba(255,255,255,.08);box-shadow:0 50px 120px -30px rgba(0,0,0,.9);padding:20px;overflow:hidden}
+.cf-body{position:absolute;left:20px;right:20px;bottom:20px;overflow:hidden}
+.cf-times{position:absolute;left:0;top:0;bottom:0;width:44px}
+.cf-times span{position:absolute;left:0;font-size:10px;color:var(--c-mute);font-variant-numeric:tabular-nums;transform:translateY(-6px)}
+.cf-view{position:absolute;top:0;bottom:0;right:0;overflow:hidden}
+.cf-lines{position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.06) 0 1px,transparent 1px 32px);pointer-events:none}
+.cf-track{position:absolute;top:0;bottom:0;left:0;display:flex;will-change:transform}
+.cf-day{position:relative;flex:none;height:100%}
+.cf-day .dh{position:absolute;left:0;right:0;top:0;height:54px}
+.cf-day .ap{position:absolute;left:0;right:0;margin:0}
 @media (max-width:760px){
   .cgrid,.crow,.bd-grid{grid-template-columns:minmax(0,1fr)}
   .cnav .cic:not(.dot){display:none}
