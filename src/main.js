@@ -287,6 +287,16 @@ const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 let pos=0,active=-1,lastSc=0,AUTO=null;
 // the heartbeat hand-off plays by itself: it drives the real scroll position, so it stays perfectly in sync with scrolling
 const easeQ=x=>.5*x+.5*(1-Math.cos(Math.PI*x))/2; // steady flow with soft ends: no burst in the middle, no stops
+// variable-speed glide: each zone [fromPx,toPx,speed] moves at its own pace, blended smoothly, soft start and end.
+// Returns the duration (ms) and an easing that maps time -> distance.
+function flowPlan(from,to,zones,pxPerSec){const N=600,span=to-from,ds=span/N,T=[0];let t=0;const w=span*.05;
+  const st=x=>{x=clamp(x);return x*x*(3-2*x)};
+  for(let i=0;i<N;i++){const d=from+(i+.5)*ds,u=(i+.5)/N;let v=1;
+    for(const [a,b,s] of zones){const k=st((d-(a-w))/(2*w))*(1-st((d-(b-w))/(2*w)));v+=(s-1)*k}
+    v*=.4+.6*st(Math.min(u,1-u)/.1);t+=ds/(v*pxPerSec);T.push(t)}
+  const ease=x=>{const tt=x*t;let lo=0,hi=N;while(hi-lo>1){const m=(lo+hi)>>1;T[m]<=tt?lo=m:hi=m}
+    const f=T[hi]>T[lo]?(tt-T[lo])/(T[hi]-T[lo]):0;return(lo+f)/N};
+  return{ms:t*1000,ease}}
 function autoTo(target,ms,easing=ease){AUTO={};lenis.scrollTo(target+TRACK_TOP,{duration:ms/1000,easing,lock:true,force:true,onComplete:()=>{AUTO=null}})}
 let VW=innerWidth,VH=innerHeight,SCROLL_MAX=1,TRACK_TOP=0;
 function onScroll(){update(clamp(scrollY-TRACK_TOP,0,SCROLL_MAX))}
@@ -297,7 +307,9 @@ function update(sc){
   let a;
   // one gesture is enough: as the camera lands on Revenue, the growth, the heartbeat and the clinic play by themselves
   const trig=finLen*.46,asmEnd=finLen+TL[0].s1;
-  if(!AUTO&&!reduce&&lastSc<trig&&sc>=trig&&sc<asmEnd-2)autoTo(asmEnd,6800,easeQ);
+  if(!AUTO&&!reduce&&lastSc<trig&&sc>=trig&&sc<asmEnd-2){
+    // Q1 -> Q4 climbs fast (2.6x); the heartbeat journey and the clinic build keep their calm pace
+    const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="zoom"),sw=TL.find(g=>g.k==="swipe"),zs=finLen+zg.s0,ze=finLen+sw.s1;
   if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,4600);
