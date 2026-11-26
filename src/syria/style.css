@@ -70,6 +70,8 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 .bag li span:first-child{font-family:var(--ar);font-weight:400;font-size:18px;text-transform:none}
 .bag li:only-child:empty{display:none}
 
+.credit{position:absolute;right:clamp(16px,2.4vw,36px);bottom:12px;z-index:4;font:700 9px/1 var(--lat);letter-spacing:.16em;text-transform:uppercase;color:inherit;opacity:.75}
+
 /* intro: the title assembles letter by letter, line by line */
 .intro{position:absolute;inset:0;z-index:20;background:var(--paper);color:#0b0b0b;display:flex;flex-direction:column;justify-content:center;
   padding:3vh 3vw;font:400 clamp(22px,4.1vh,46px)/1.18 var(--ar);pointer-events:none}

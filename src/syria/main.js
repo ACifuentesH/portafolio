@@ -66,7 +66,7 @@ function place(m, { dur = 1.05, instant = false } = {}) {
   tiles.forEach((el, i) => {
     const p = L[i], vars = { x: p.x - BW / 2, y: p.y - BH / 2, scale: p.h / BH, rotation: p.r, autoAlpha: p.o };
     el.style.zIndex = p.z;
-    if (instant || reduce) gsap.set(el, vars);
+    if (instant || reduce) gsap.set(el, { ...vars, overwrite: true });
     else gsap.to(el, { ...vars, duration: dur, ease: "expo.inOut", delay: Math.min(Math.abs(wrap(i - cur)), 8) * 0.018, overwrite: true });
   });
 }
@@ -77,9 +77,9 @@ function syncInfo() {
   const t = TAPES[cur];
   $("iNum").textContent = pad(cur + 1); $("iTot").textContent = pad(N);
   $("iEn").textContent = t.en; $("iAr").textContent = t.ar;
-  $("iTxt").textContent = `${t.genre} recorded in ${t.cityEn}, ${t.year}. Original ${t.len} tape, J-card printed in two inks. Side A / Side B. Plays fine, hiss included.`;
+  $("iTxt").textContent = `${t.artist}. ${t.genre}${t.year ? ", " + t.year : ""}. Original Syrian cassette, scan SMA ${t.id} from the Syrian Cassette Archives. Side A / Side B, hiss included.`;
   $("iPrice").textContent = "$" + t.price;
-  $("htAr").textContent = t.city; $("htY").textContent = "©" + t.year; $("htL").textContent = t.len;
+  $("htAr").textContent = t.tag; $("htY").textContent = t.year ? "©" + t.year : "SMA " + t.id; $("htL").textContent = t.genre.toLowerCase();
 }
 function showHeroType(on) {
   const h = S.h, w = h * AR;
@@ -196,6 +196,9 @@ async function boot() {
   playIntro();
   const fonts = ["400 40px Lalezar", "800 40px Archivo", "700 40px 'Reem Kufi'"].map((f) => document.fonts.load(f));
   await Promise.race([Promise.all(fonts), new Promise((r) => setTimeout(r, 2500))]);
+  // real scans; preload so the first morphs never show empty cards
+  await Promise.race([Promise.all(TAPES.map((t) => t.img && new Promise((r) => { const im = new Image(); im.onload = im.onerror = r; im.src = t.img; }))),
+    new Promise((r) => setTimeout(r, 4000))]);
   TAPES.forEach((t, i) => { tiles[i].style.backgroundImage = `url(${t.img || makeCover(t, i)})`; });
   buildSnake(); requestAnimationFrame(snakeLoop);
   go("grid", { instant: true });

@@ -1,20 +1,21 @@
-// The shop's tapes. While the real cover scans are not in the repo, each tape gets a generated J-card;
-// to use a real scan, drop it in public/syria/covers/ and set `img: "/syria/covers/<file>.jpg"`.
+// Real cover scans from the Syrian Cassette Archives (syriancassettearchives.org), shown here as a design demo.
+// Titles are read off each J-card; `year` only where the card prints it. Prices are part of the demo shop.
+const c = (id) => `/syria/covers/sma-${id}.jpg`;
 export const TAPES = [
-  { ar: "دبكة الجزيرة", en: "Jazira Dabke", city: "الحسكة", cityEn: "Hasakah", year: 1988, len: "C-60", price: 14, genre: "DABKE" },
-  { ar: "طرب حلبي", en: "Aleppo Tarab", city: "حلب", cityEn: "Aleppo", year: 1983, len: "C-90", price: 18, genre: "TARAB" },
-  { ar: "أغاني الأعراس", en: "Wedding Songs Vol. 2", city: "حمص", cityEn: "Homs", year: 1991, len: "C-60", price: 12, genre: "WEDDING" },
-  { ar: "موال", en: "Mawwal", city: "دمشق", cityEn: "Damascus", year: 1979, len: "C-46", price: 16, genre: "MAWWAL" },
-  { ar: "قدود حلبية", en: "Qudud Halabiya", city: "حلب", cityEn: "Aleppo", year: 1985, len: "C-90", price: 19, genre: "QUDUD" },
-  { ar: "ليالي الشام", en: "Damascus Nights", city: "دمشق", cityEn: "Damascus", year: 1990, len: "C-60", price: 15, genre: "LIVE" },
-  { ar: "بزق", en: "Buzuq Solo", city: "اللاذقية", cityEn: "Latakia", year: 1987, len: "C-46", price: 13, genre: "BUZUQ" },
-  { ar: "حفلة حية ٣", en: "Live Party 3", city: "دير الزور", cityEn: "Deir ez-Zor", year: 1994, len: "C-90", price: 11, genre: "CHOUBI" },
-  { ar: "عتابا", en: "Ataba", city: "درعا", cityEn: "Daraa", year: 1982, len: "C-60", price: 17, genre: "ATABA" },
-  { ar: "سهرة", en: "Sahra", city: "حماة", cityEn: "Hama", year: 1989, len: "C-60", price: 14, genre: "SAHRA" },
-  { ar: "ميجانا", en: "Mijana", city: "طرطوس", cityEn: "Tartus", year: 1986, len: "C-46", price: 12, genre: "MIJANA" },
-  { ar: "دبكة شمالية", en: "Northern Dabke", city: "القامشلي", cityEn: "Qamishli", year: 1993, len: "C-90", price: 13, genre: "DABKE" },
-  { ar: "أبو الزلف", en: "Abu Zuluf", city: "السويداء", cityEn: "Suwayda", year: 1984, len: "C-60", price: 16, genre: "FOLK" },
-  { ar: "نجوم الحفلات", en: "Party Stars", city: "حلب", cityEn: "Aleppo", year: 1995, len: "C-90", price: 10, genre: "KEYBOARD" },
-  { ar: "مقامات", en: "Maqamat", city: "دمشق", cityEn: "Damascus", year: 1978, len: "C-90", price: 21, genre: "MAQAM" },
-  { ar: "على الروزانا", en: "Ala Rozana", city: "حمص", cityEn: "Homs", year: 1980, len: "C-60", price: 15, genre: "FOLK" },
+  { id: "0853", img: c("0853"), ar: "ثلج ونار", en: "Thalj w Nar", artist: "Mayada El Hennawi", tag: "ميادة الحناوي", genre: "TARAB", price: 18 },
+  { id: "0437", img: c("0437"), ar: "عتابات على العود", en: "Ataba on the Oud", artist: "Suleiman Ghali", tag: "سليمان غالي", genre: "ATABA", price: 14 },
+  { id: "0420", img: c("0420"), ar: "مواويل", en: "Mawawil", artist: "Habib Ali", tag: "حبيب علي", genre: "MAWAL", year: 1997, price: 12 },
+  { id: "1012", img: c("1012"), ar: "أسمر", en: "Asmar", artist: "Samira Tawfiq", tag: "سميرة توفيق", genre: "FOLK", price: 17 },
+  { id: "0325", img: c("0325"), ar: "طير الحباري", en: "Houbara Bird", artist: "Hamid Mansour", tag: "حميد منصور", genre: "JAZRAWI", price: 13 },
+  { id: "0840", img: c("0840"), ar: "تقاسيم أمير البزق", en: "Taqasim, Prince of the Buzuq", artist: "Mohammed Abdel Karim", tag: "البزق", genre: "INSTRUMENTAL", price: 16 },
+  { id: "0458", img: c("0458"), ar: "رسالة إلى الجولان", en: "Letter to the Golan", artist: "Salman al-Shaar & Hilmi Ghannam", tag: "الجولان", genre: "SUNG POETRY", price: 15 },
+  { id: "0603", img: c("0603"), ar: "حفلة حلب", en: "Aleppo Concert", artist: "The Bandaly Family", tag: "حلب", genre: "POP", price: 14 },
+  { id: "0546", img: c("0546"), ar: "ستيريو عمر الكيلاني", en: "Stereo Omar al-Kilani", artist: "Omar al-Kilani shop", tag: "ستيريو", genre: "SHOP TAPE", price: 11 },
+  { id: "0115", img: c("0115"), ar: "روح روحي", en: "Rouh Rouhi", artist: "Najwa Karam", tag: "نجوى كرم", genre: "POP", price: 15 },
+  { id: "0424", img: c("0424"), ar: "مركز طارق", en: "Tareq Center", artist: "Tareq Center, Jenin", tag: "جنين", genre: "SHOP TAPE", price: 10 },
+  { id: "0282", img: c("0282"), ar: "سليمان الشعار", en: "Suleiman al-Shaar", artist: "Suleiman al-Shaar", tag: "ورود", genre: "SUNG POETRY", price: 13 },
+  { id: "0897", img: c("0897"), ar: "شريط فارغ", en: "Sednny SEL 60", artist: "Blank tape, side A", tag: "C-60", genre: "BLANK", price: 6 },
+  { id: "0896", img: c("0896"), ar: "الفرقان", en: "Al-Furqan", artist: "Al-Furqan recordings", tag: "تسجيلات", genre: "SPOKEN WORD", price: 8 },
+  { id: "0600", img: c("0600"), ar: "النسخة الأصلية", en: "Original Copy", artist: "Hi-Fi super stereo", tag: "Hi-Fi", genre: "SHAABI", price: 9 },
+  { id: "0681", img: c("0681"), ar: "قائمة الأغاني", en: "Handwritten Track List", artist: "J-card insert", tag: "بخط اليد", genre: "INSERT", price: 7 },
 ];
