@@ -36,7 +36,8 @@ function layout(mode, cur) {
   if (mode === "grid") {
     let best = { h: 0 }; const g = Math.max(6, S.w * 0.012);
     for (let c = 2; c <= 8; c++) { const r = Math.ceil(N / c);
-      const h = Math.min((S.h - (r - 1) * g) / r, ((S.w - (c - 1) * g) / c) / AR); if (h > best.h) best = { c, r, h }; }
+      const h = Math.min((S.h - (r - 1) * g) / r, ((S.w - (c - 1) * g) / c) / AR), score = h * (1 - 0.08 * (r * c - N)); // full rows win
+      if (score > (best.score || 0)) best = { c, r, h, score }; }
     const { c, r, h } = best, w = h * AR, x0 = cx - (c * w + (c - 1) * g) / 2 + w / 2, y0 = cy - (r * h + (r - 1) * g) / 2 + h / 2;
     for (let i = 0; i < N; i++) out.push({ x: x0 + (i % c) * (w + g), y: y0 + Math.floor(i / c) * (h + g), h, r: 0, o: 1, z: 1 });
   } else if (mode === "row" || mode === "column") {
@@ -44,7 +45,7 @@ function layout(mode, cur) {
     for (let i = 0; i < N; i++) { const d = wrap(i - cur);
       out.push({ x: row ? cx + d * (w + g) : cx, y: row ? cy : cy + d * (h + g), h, r: 0, o: 1, z: 10 - Math.abs(d) }); }
   } else if (mode === "single") {
-    const h = S.h * 0.3;
+    const h = S.h * 0.5;
     for (let i = 0; i < N; i++) out.push({ x: cx, y: cy, h, r: -10, o: i === cur ? 1 : 0, z: i === cur ? 50 : 1 });
   } else { // hero
     for (let i = 0; i < N; i++) out.push({ x: cx, y: cy, h: S.h, r: 0, o: i === cur ? 1 : 0, z: i === cur ? 50 : 1 });
@@ -77,9 +78,9 @@ function syncInfo() {
   const t = TAPES[cur];
   $("iNum").textContent = pad(cur + 1); $("iTot").textContent = pad(N);
   $("iEn").textContent = t.en; $("iAr").textContent = t.ar;
-  $("iTxt").textContent = `${t.artist}. ${t.genre}${t.year ? ", " + t.year : ""}. Original Syrian cassette, scan SMA ${t.id} from the Syrian Cassette Archives. Side A / Side B, hiss included.`;
+  $("iTxt").textContent = `${t.artist}. ${t.genre}${t.year ? ", " + t.year : ""}. Original Syrian cassette${t.id ? ", scan SMA " + t.id + " from the Syrian Cassette Archives" : ""}. Side A / Side B, hiss included.`;
   $("iPrice").textContent = "$" + t.price;
-  $("htAr").textContent = t.tag; $("htY").textContent = t.year ? "©" + t.year : "SMA " + t.id; $("htL").textContent = t.genre.toLowerCase();
+  $("htAr").textContent = t.tag; $("htY").textContent = t.year ? "©" + t.year : (t.id ? "SMA " + t.id : ""); $("htL").textContent = t.genre.toLowerCase();
 }
 function showHeroType(on) {
   const h = S.h, w = h * AR;
