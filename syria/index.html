@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sharit — Syrian Tapes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Aref+Ruqaa:wght@700&family=Reem+Kufi:wght@600;700&family=Archivo:wdth,wght@62..125,400..900&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="/src/syria/style.css">
+</head>
+<body>
+<main class="shop" id="shop">
+  <svg class="snake" id="snake" aria-hidden="true">
+    <path id="snakePath" fill="none"/>
+    <use href="#snakePath" class="snake-body"/>
+    <text class="snake-text" dir="rtl"><textPath href="#snakePath" id="snakeText"></textPath></text>
+  </svg>
+
+  <header class="top">
+    <button class="logo" id="logo" aria-label="Replay intro"><b>شريط</b><span>SHARIT — SYRIAN TAPES</span></button>
+    <nav class="modes" id="modes" aria-label="Layout">
+      <button data-m="grid" aria-label="Grid"><i class="ic-grid"></i></button>
+      <button data-m="row" aria-label="Row"><i class="ic-row"></i></button>
+      <button data-m="single" aria-label="Shuffle"><i class="ic-single"></i></button>
+      <button data-m="hero" aria-label="Cover"><i class="ic-hero"></i></button>
+      <button data-m="column" aria-label="Column"><i class="ic-col"></i></button>
+      <button class="auto on" id="auto" aria-label="Autoplay">AUTO</button>
+    </nav>
+    <button class="bagbtn" id="bagBtn">BAG <b id="bagN">0</b></button>
+  </header>
+
+  <div class="spine" aria-hidden="true"></div>
+
+  <aside class="callig" aria-hidden="true">
+    <i class="orn"></i><span>أشرطة الموسيقى السورية</span><i class="orn"></i>
+  </aside>
+
+  <section class="stage" id="stage" aria-label="Cassette covers"></section>
+  <div class="hero-type" id="heroType" aria-hidden="true">
+    <em class="ht-a">Side A</em><b class="ht-ar" id="htAr"></b><em class="ht-y" id="htY"></em><em class="ht-l" id="htL"></em>
+  </div>
+
+  <article class="info" id="info">
+    <div class="i-n"><span id="iNum">01</span> / <span id="iTot">16</span></div>
+    <h1 id="iEn"></h1>
+    <p class="i-ar" id="iAr" dir="rtl"></p>
+    <p class="i-txt" id="iTxt"></p>
+    <div class="i-buy"><span id="iPrice"></span><button id="addBtn">+ ADD TO BAG</button></div>
+    <div class="i-nav"><button id="prev" aria-label="Previous">←</button><button id="next" aria-label="Next">→</button></div>
+  </article>
+
+  <div class="bag" id="bag" hidden>
+    <div class="bag-h">YOUR BAG <button id="bagClose" aria-label="Close">×</button></div>
+    <ul id="bagList"></ul>
+    <div class="bag-t">TOTAL <b id="bagTotal">$0</b></div>
+  </div>
+
+  <div class="intro" id="intro" dir="rtl" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+</main>
+<script type="module" src="/src/syria/main.js"></script>
+</body>
+</html>
