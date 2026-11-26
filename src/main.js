@@ -9,7 +9,7 @@ const LABELS=[
   ["Style 01 / 05","Brutalism"],["Style 02 / 05","International Typographic Style"],["Style 03 / 05","Y2K"],["Style 04 / 05","Art Déco"],["Style 05 / 05","Glitch"],
   ["Culture 01 / 04","日本 · Japan"],["Culture 02 / 04","México"],["Culture 03 / 04","العالم العربي · Arab world"],["Culture 04 / 04","Venezuela"],["Hello","Web Developer · UX/UI"]];
 const ACT=[0,0,0,0,1,1,1,1,1,2,2,2,2,3];
-const ST_CAM_VH=3.4,ST_HOLD_VH=1.2; // studio: camera journey, then the shop at rest
+const ST_CAM_VH=2.4,ST_HOLD_VH=1.2; // studio: camera journey, then the shop at rest
 const $=id=>document.getElementById(id);
 const track=$("track"),strip=$("strip"),panels=[...strip.children],N=panels.length,
       tagA=$("tagA"),tagB=$("tagB"),dots=$("dots"),meter=$("meter");
@@ -340,9 +340,9 @@ function update(sc){
     const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="fly"),zs=finLen+zg.s0,ze=finLen+sw.s1;
-  const stStart=restStart,stCamEnd=stStart+ST_CAM_VH*vh,stripStart=stCamEnd+ST_HOLD_VH*vh;
+  const flyStart=finLen+sw.s0,stStart=flyStart+(sw.s1-sw.s0)*.2,stCamEnd=stStart+ST_CAM_VH*vh,stripStart=Math.max(restStart,stCamEnd)+ST_HOLD_VH*vh;
   // the ending runs straight into the studio camera: no stop between the black and the back of the head
-  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<stCamEnd-2){const plan=flowPlan(sc,stCamEnd,[[stStart-.1*vh,stCamEnd,.8]],.94*vh);autoTo(stCamEnd,plan.ms,plan.ease)}
+  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<stCamEnd-2){const plan=flowPlan(sc,stCamEnd,[[stStart,stCamEnd,1.05]],.94*vh);autoTo(stCamEnd,plan.ms,plan.ease)}
   lastSc=sc;
   if(phase("lift",ms)<=0)medscroll.style.transform=`translate3d(0,${-y}px,0)`;spy(y);demo(ms);assemble(ms,y);
   if(sc<finLen){pos=0;a=r>.75?1:0}
@@ -354,7 +354,7 @@ function update(sc){
   strip.style.transform=`translate3d(${-pos*100}%,0,0)`;
   // studio sits between healthcare and music: visible from the black onwards, slides out with the strip
   STC=clamp((sc-stStart)/(ST_CAM_VH*vh));ST_ON=sc>=stStart-1&&pos<1;
-  studioEl.style.visibility=ST_ON?"visible":"hidden";studioEl.style.transform=pos>0?`translate3d(${-pos*100}%,0,0)`:"";
+  studioEl.style.visibility=ST_ON?"visible":"hidden";studioEl.style.opacity=smooth(clamp((sc-stStart)/((sw.s1-sw.s0)*.8))).toFixed(3);studioEl.style.transform=pos>0?`translate3d(${-pos*100}%,0,0)`:"";
   if(a!==active){active=a;tagA.textContent=LABELS[a][0];tagB.textContent=LABELS[a][1];
     [...dots.children].forEach((d,k)=>d.classList.toggle("on",k===a));
     const pi=a>=3?a-2:a===1?0:-1,w=pi>=0&&panels[pi].querySelector(".word");if(w){w.classList.remove("enter");void w.offsetWidth;w.classList.add("enter")}}
@@ -371,19 +371,24 @@ function drawStudio(t){if(!studio)return;const {lit}=studio.render(STC,t);
   stUi.classList.toggle("live",STC>.9)}
 // shop: try on (click a card), add to bag, running total
 const bag=[];const money=n=>"$"+n.toLocaleString("en-US");
-function renderShop(th){$("stGrid").innerHTML=CATALOG.map(g=>`<div class="st-card${studio&&g===studio.garment?" on":""}" data-id="${g.id}" role="button" tabindex="0" aria-label="Try on ${g.name}">
-  ${th&&th[g.id]?`<img src="${th[g.id]}" alt="${g.name}, ${g.kind}">`:`<div class="ph"></div>`}<i class="sw" style="background:${g.color}"></i>
-  <div class="st-meta"><small>${g.code} · ${g.kind.toUpperCase()}</small><b>${g.name}</b><div class="st-row"><span>${money(g.price)}</span><button class="st-add" data-add="${g.id}">+ ADD</button></div></div></div>`).join("")}
+const SLOT_NAME={top:"TOPS",layer:"LAYER",bottom:"BOTTOMS",hat:"EXTRAS"};
+function isWorn(g){return studio&&studio.worn[g.slot]===g}
+function renderShop(th){let last="";$("stGrid").innerHTML=CATALOG.map(g=>{const head=g.slot!==last?`<p class="st-group">${SLOT_NAME[g.slot]}</p>`:"";last=g.slot;
+  return head+`<div class="st-card${isWorn(g)?" on":""}" data-id="${g.id}" role="button" tabindex="0" aria-label="Try on ${g.name}, ${g.shade}">
+  ${th&&th[g.id]?`<img src="${th[g.id]}" alt="${g.name} in ${g.shade}">`:`<div class="ph"></div>`}<i class="sw" style="background:${g.color}"></i>
+  <div class="st-meta"><small>${g.code} · ${g.shade.toUpperCase()}</small><b>${g.name}</b><div class="st-row"><span>${money(g.price)}</span><button class="st-add" data-add="${g.id}">+ ADD</button></div></div></div>`}).join("");syncTry()}
+function syncTry(){if(!studio)return;const w=studio.worn,parts=[w.layer,w.top,w.bottom].filter(Boolean);
+  $("stTry").textContent=parts.map(g=>g.name).join(" · ");$("stTryP").textContent=money(parts.concat(w.hat?[w.hat]:[]).reduce((s,g)=>s+g.price,0))}
 const loadStudio=()=>import("./studio.js").then(m=>{CATALOG=m.CATALOG;studio=m.createStudio($("stCanvas"));renderShop(null);studio.ready.then(()=>studio.thumbs()).then(renderShop).catch(e=>console.warn(e))});
 (window.requestIdleCallback||setTimeout)(loadStudio,{timeout:1500});
-function tryOn(g){studio.applyGarment(g);$("stTry").textContent=g.name;$("stTryP").textContent=money(g.price);
-  document.querySelectorAll(".st-card").forEach(c=>c.classList.toggle("on",c.dataset.id===g.id))}
+function tryOn(g){studio.wear(g);syncTry();
+  document.querySelectorAll(".st-card").forEach(c=>c.classList.toggle("on",isWorn(CATALOG.find(x=>x.id===c.dataset.id))))}
 function renderBag(){const tot=bag.reduce((s,g)=>s+g.price,0);$("stBagN").textContent=bag.length;$("stBagT").textContent=money(tot);$("stBagTotal").textContent=money(tot);
-  $("stBagList").innerHTML=bag.length?bag.map(g=>`<li><span>${g.name}</span><span>${money(g.price)}</span></li>`).join(""):"<li><span>Your bag is empty.</span></li>"}
+  $("stBagList").innerHTML=bag.length?bag.map(g=>`<li><span>${g.name} — ${g.shade}</span><span>${money(g.price)}</span></li>`).join(""):"<li><span>Your bag is empty.</span></li>"}
 $("stGrid").addEventListener("click",e=>{const add=e.target.closest("[data-add]");const card=e.target.closest(".st-card");if(!card)return;
   const g=CATALOG.find(x=>x.id===card.dataset.id);
   if(add){bag.push(g);renderBag();add.classList.add("ok");add.textContent="ADDED ✓";setTimeout(()=>{add.classList.remove("ok");add.textContent="+ ADD"},1100);
-    const bb=$("stBagBtn");bb.classList.remove("bump");void bb.offsetWidth;bb.classList.add("bump");if(g!==studio.garment)tryOn(g);return}
+    const bb=$("stBagBtn");bb.classList.remove("bump");void bb.offsetWidth;bb.classList.add("bump");if(!isWorn(g))tryOn(g);return}
   tryOn(g)});
 $("stGrid").addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const card=e.target.closest(".st-card");if(!card||e.target.closest("[data-add]"))return;e.preventDefault();tryOn(CATALOG.find(x=>x.id===card.dataset.id))});
 $("stBagBtn").addEventListener("click",()=>{const b=$("stBag"),open=b.hidden;b.hidden=!open;$("stBagBtn").setAttribute("aria-expanded",String(open))});

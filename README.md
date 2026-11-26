@@ -34,6 +34,6 @@ El resultado queda en `dist/`.
 
 Vercel detecta Vite solo: importa el repo, deja los valores por defecto (build `npm run build`, salida `dist`) y despliega.
 
-## Créditos de los modelos 3D
+## Estudio 3D (moda)
 
-- `public/models/avatar.glb`: avatar de [Ready Player Me](https://readyplayer.me/), tomado de los ejemplos de [three.js](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf) (`readyplayer.me.glb`). En la escena se re-estiliza: cuerpo de obsidiana, sin sombrero ni barba, y la ropa se recolorea por código.
+El maniquí y toda la ropa se generan por código en `src/studio.js` con three.js: no hay modelos ni texturas externas. Las telas (jaspeado, punto, denim, estampado) se pintan en canvas al cargar.
