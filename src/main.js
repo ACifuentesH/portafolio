@@ -5,10 +5,11 @@ import {gsap} from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 const LABELS=[
-  ["Field 01 / 04","Finance"],["Field 02 / 04","Healthcare"],["Field 03 / 04","Music"],["Field 04 / 04","Fashion"],
+  ["Field 01 / 04","Finance"],["Field 02 / 04","Healthcare"],["Field 03 / 04","Fashion"],["Field 04 / 04","Music"],
   ["Style 01 / 05","Brutalism"],["Style 02 / 05","International Typographic Style"],["Style 03 / 05","Y2K"],["Style 04 / 05","Art Déco"],["Style 05 / 05","Glitch"],
   ["Culture 01 / 04","日本 · Japan"],["Culture 02 / 04","México"],["Culture 03 / 04","العالم العربي · Arab world"],["Culture 04 / 04","Venezuela"],["Hello","Web Developer · UX/UI"]];
 const ACT=[0,0,0,0,1,1,1,1,1,2,2,2,2,3];
+const ST_CAM_VH=3.4,ST_HOLD_VH=1.2; // studio: camera journey, then the shop at rest
 const $=id=>document.getElementById(id);
 const track=$("track"),strip=$("strip"),panels=[...strip.children],N=panels.length,
       tagA=$("tagA"),tagB=$("tagB"),dots=$("dots"),meter=$("meter");
@@ -27,10 +28,10 @@ function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-
   const yS=clamp(offIn($("sec-services"),medscroll).y-vh*.2,0,MED_PX),bk=offIn($("sec-book"),medscroll),
         yB=clamp(bk.y-Math.max(30,(vh-bk.h)/2),yS,MED_PX),yA=MED_PX;
   // [kind, scroll length, page y from, page y to]
-  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",2.2*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.3*vh,yA,yA]];
+  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",2.2*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.05*vh,yA,yA]];
   measureParts();
   let s=0;TL=segs.map(([k,len,y0,y1])=>{const o={k,s0:s,s1:s+len,y0,y1};s+=len;return o});MED_LEN=s;
-  track.style.height=(FIN_VH*vh+MED_LEN+(N-1)*STEP_VH*vh+vh)+"px"}
+  track.style.height=(FIN_VH*vh+MED_LEN+(ST_CAM_VH+ST_HOLD_VH)*vh+(N-1)*STEP_VH*vh+vh)+"px"}
 function seg(s){for(const g of TL)if(s<g.s1)return{g,t:g.s1>g.s0?(s-g.s0)/(g.s1-g.s0):1};return{g:TL[TL.length-1],t:1}}
 const phase=(name,s)=>{const g=TL.find(x=>x.k===name);return clamp((s-g.s0)/(g.s1-g.s0))};
 const pageY=s=>{const {g,t}=seg(s);return lerp(g.y0,g.y1,t)};
@@ -339,19 +340,55 @@ function update(sc){
     const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="fly"),zs=finLen+zg.s0,ze=finLen+sw.s1;
-  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<ze-2)autoTo(ze,5200,easeQ);
+  const stStart=restStart,stCamEnd=stStart+ST_CAM_VH*vh,stripStart=stCamEnd+ST_HOLD_VH*vh;
+  // the ending runs straight into the studio camera: no stop between the black and the back of the head
+  if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<stCamEnd-2){const plan=flowPlan(sc,stCamEnd,[[stStart-.1*vh,stCamEnd,.8]],.94*vh);autoTo(stCamEnd,plan.ms,plan.ease)}
   lastSc=sc;
   if(phase("lift",ms)<=0)medscroll.style.transform=`translate3d(0,${-y}px,0)`;spy(y);demo(ms);assemble(ms,y);
   if(sc<finLen){pos=0;a=r>.75?1:0}
   else if(sc<restStart){pos=0;a=1}
-  else{const f=(sc-restStart)/(STEP_VH*vh),i=Math.min(Math.floor(f),N-2),l=f-i;
-    pos=f>=N-1?N-1:i+ease(clamp((l-HOLD)/(1-HOLD)));a=Math.round(pos)+1;
+  else if(sc<stripStart){pos=0;a=2}
+  else{const f=(sc-stripStart)/(STEP_VH*vh),i=Math.min(Math.floor(f),N-2),l=f-i;
+    pos=f>=N-1?N-1:i+ease(clamp((l-HOLD)/(1-HOLD)));a=pos<.5?2:Math.round(pos)+2;
     if(!reduce)panels.forEach((pn,k)=>{const d=k-pos;const c=pn.querySelector(":scope>.copy");if(Math.abs(d)<1.2&&c)c.style.transform=`translate3d(${d*-28}%,0,0)`})}
   strip.style.transform=`translate3d(${-pos*100}%,0,0)`;
+  // studio sits between healthcare and music: visible from the black onwards, slides out with the strip
+  STC=clamp((sc-stStart)/(ST_CAM_VH*vh));ST_ON=sc>=stStart-1&&pos<1;
+  studioEl.style.visibility=ST_ON?"visible":"hidden";studioEl.style.transform=pos>0?`translate3d(${-pos*100}%,0,0)`:"";
   if(a!==active){active=a;tagA.textContent=LABELS[a][0];tagB.textContent=LABELS[a][1];
     [...dots.children].forEach((d,k)=>d.classList.toggle("on",k===a));
-    const w=a>0&&panels[a-1].querySelector(".word");if(w){w.classList.remove("enter");void w.offsetWidth;w.classList.add("enter")}}
+    const pi=a>=3?a-2:a===1?0:-1,w=pi>=0&&panels[pi].querySelector(".word");if(w){w.classList.remove("enter");void w.offsetWidth;w.classList.add("enter")}}
 }
+/* ---------- studio: the 3D fashion field ---------- */
+const studioEl=$("studio"),stUi=$("stUi");let STC=0,ST_ON=false;
+let studio=null,CATALOG=[]; // the 3D studio (three.js + models) loads in the background, after the page is up
+const stParts=[studioEl.querySelector(".st-back"),studioEl.querySelector(".st-mast"),studioEl.querySelector(".st-foot"),studioEl.querySelector(".st-shop")];
+function drawStudio(t){if(!studio)return;const {lit}=studio.render(STC,t);
+  const v=Math.round(239*lit),g=Math.round(238*lit),b=Math.round(234*lit);studioEl.style.background=`rgb(${v},${g},${b})`;
+  studioEl.querySelector(".st-grain").style.opacity=(.5*lit).toFixed(3);
+  stParts.forEach((el,i)=>{const r=smooth(clamp((STC-.72-i*.05)/.2));el.style.opacity=r.toFixed(3);
+    if(i===3)el.style.transform=`translateX(${(1-r)*30}px)`;else if(i===0)el.style.transform=`translateY(-38%) scale(${(1.08-.08*r).toFixed(4)})`});
+  stUi.classList.toggle("live",STC>.9)}
+// shop: try on (click a card), add to bag, running total
+const bag=[];const money=n=>"$"+n.toLocaleString("en-US");
+function renderShop(th){$("stGrid").innerHTML=CATALOG.map(g=>`<div class="st-card${studio&&g===studio.garment?" on":""}" data-id="${g.id}" role="button" tabindex="0" aria-label="Try on ${g.name}">
+  ${th&&th[g.id]?`<img src="${th[g.id]}" alt="${g.name}, ${g.kind}">`:`<div class="ph"></div>`}<i class="sw" style="background:${g.color}"></i>
+  <div class="st-meta"><small>${g.code} · ${g.kind.toUpperCase()}</small><b>${g.name}</b><div class="st-row"><span>${money(g.price)}</span><button class="st-add" data-add="${g.id}">+ ADD</button></div></div></div>`).join("")}
+const loadStudio=()=>import("./studio.js").then(m=>{CATALOG=m.CATALOG;studio=m.createStudio($("stCanvas"));renderShop(null);studio.ready.then(()=>studio.thumbs()).then(renderShop).catch(e=>console.warn(e))});
+(window.requestIdleCallback||setTimeout)(loadStudio,{timeout:1500});
+function tryOn(g){studio.applyGarment(g);$("stTry").textContent=g.name;$("stTryP").textContent=money(g.price);
+  document.querySelectorAll(".st-card").forEach(c=>c.classList.toggle("on",c.dataset.id===g.id))}
+function renderBag(){const tot=bag.reduce((s,g)=>s+g.price,0);$("stBagN").textContent=bag.length;$("stBagT").textContent=money(tot);$("stBagTotal").textContent=money(tot);
+  $("stBagList").innerHTML=bag.length?bag.map(g=>`<li><span>${g.name}</span><span>${money(g.price)}</span></li>`).join(""):"<li><span>Your bag is empty.</span></li>"}
+$("stGrid").addEventListener("click",e=>{const add=e.target.closest("[data-add]");const card=e.target.closest(".st-card");if(!card)return;
+  const g=CATALOG.find(x=>x.id===card.dataset.id);
+  if(add){bag.push(g);renderBag();add.classList.add("ok");add.textContent="ADDED ✓";setTimeout(()=>{add.classList.remove("ok");add.textContent="+ ADD"},1100);
+    const bb=$("stBagBtn");bb.classList.remove("bump");void bb.offsetWidth;bb.classList.add("bump");if(g!==studio.garment)tryOn(g);return}
+  tryOn(g)});
+$("stGrid").addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const card=e.target.closest(".st-card");if(!card||e.target.closest("[data-add]"))return;e.preventDefault();tryOn(CATALOG.find(x=>x.id===card.dataset.id))});
+$("stBagBtn").addEventListener("click",()=>{const b=$("stBag"),open=b.hidden;b.hidden=!open;$("stBagBtn").setAttribute("aria-expanded",String(open))});
+renderBag();
+
 /* ---------- clinic page: it works ---------- */
 const secY=id=>cached("sec-"+id,()=>{let e=$("sec-"+id),y=0;while(e&&e!==medscroll){y+=e.offsetTop;e=e.offsetParent}return{y,w:1}}).y;
 function goTo(id){const y=Math.min(Math.max(secY(id)-90,0),MED_PX);lenis.scrollTo(track.offsetTop+FIN_VH*innerHeight+sOfY(y),{duration:1.4})}
@@ -448,6 +485,7 @@ function draw(time){const t=time; // seconds, from the GSAP ticker (same clock a
     try{update(SC)}catch(e){console.warn(e)}}
   else if(idle&&!--idle){dash.style.willChange="";medscroll.style.willChange=""} // at rest: let the browser re-raster crisp
   if(BR<1&&parseFloat(bridge.style.opacity||0)>0){try{drawBridge(t)}catch(e){console.warn(e)}}
+  if(ST_ON){try{drawStudio(t)}catch(e){console.warn(e)}}
   FX.forEach(f=>{const d=f.k-pos;if(Math.abs(d)>=1)return;
     try{f.cx.clearRect(0,0,f.W,f.H);DRAW[f.type](f.cx,f.W,f.H,reduce?0:t,d)}catch(e){console.warn(e)}})}
 gsap.ticker.add(draw);

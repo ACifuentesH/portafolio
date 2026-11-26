@@ -7,7 +7,7 @@
 <meta name="description" content="We can work in any field: a scroll-driven portfolio of web development and UX/UI work.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,500;0,800;1,800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@800&family=Bodoni+Moda:ital,wght@0,400;1,400;1,700&family=Archivo+Black&family=Limelight&family=Shippori+Mincho:wght@800&family=Amiri:wght@700&family=Space+Mono:wght@700&family=Bungee&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,500;0,800;1,800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@800&family=Bodoni+Moda:ital,wght@0,400;1,400;1,700&family=Archivo+Black&family=Limelight&family=Shippori+Mincho:wght@800&family=Amiri:wght@700&family=Space+Mono:wght@700&family=Bungee&family=Syncopate:wght@700&family=Archivo:wdth,wght@62..125,400..900&display=swap">
 </head>
 <body>
 <div class="track" id="track">
@@ -66,10 +66,6 @@
         <canvas></canvas>
         <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">field</div><div class="sub">128 BPM · A minor · 4/4 · type that keeps the beat</div></div>
       </section>
-      <section class="panel" data-s="fashion">
-        <div class="deco d-fashion"></div>
-        <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">field</div><div class="sub">SS27 · Look 04 · Paris · editorial contrast</div></div>
-      </section>
       <section class="panel" data-s="brutal">
         <div class="copy"><div class="lead"><span>We can work in</span><em>any</em></div><div class="word">style</div><div class="sub">Raw grid · hard shadows · no apologies</div></div>
       </section>
@@ -116,6 +112,32 @@
       </section>
     </div>
 
+    <section class="studio" id="studio" aria-label="Studio — fashion">
+      <svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+      <div class="st-back" aria-hidden="true">
+        <span class="st-yr">20</span><span class="st-coll" id="stColl">OBSIDIAN</span><span class="st-yr">26</span>
+      </div>
+      <canvas class="st-canvas" id="stCanvas"></canvas>
+      <div class="st-ui" id="stUi">
+        <header class="st-mast">
+          <h2 class="st-studio">STUDIO</h2>
+          <p class="st-sub">( FASHION PRACTICE )</p>
+          <p class="st-lines">ANY FIELD YOU WANT<br>BUT JUST IN OTHER CLOTHES</p>
+        </header>
+        <footer class="st-foot">
+          <p class="st-fine">PREVIOUS SEASON HAS EXPIRED // DROP ESTABLISHED</p>
+          <p class="st-fine2">SAME SAME BUT DIFFERENT</p>
+          <p class="st-id">DROP ID: 027 - 11 / 261126<br>CCS ( UTC−4 )</p>
+        </footer>
+        <aside class="st-shop" aria-label="The drop">
+          <div class="st-shop-h"><span>THE DROP — 06 PIECES</span><button class="st-bagbtn" id="stBagBtn" aria-expanded="false">BAG (<b id="stBagN">0</b>) <i id="stBagT">$0</i></button></div>
+          <div class="st-try"><span>ON THE MODEL</span><b id="stTry">Obsidian Shell</b><em id="stTryP">$320</em></div>
+          <div class="st-grid" id="stGrid"></div>
+          <div class="st-bag" id="stBag" hidden><ul id="stBagList"></ul><div class="st-bag-f"><span>TOTAL</span><b id="stBagTotal">$0</b></div><button class="st-checkout">CHECKOUT →</button></div>
+        </aside>
+      </div>
+      <div class="st-grain" aria-hidden="true"></div>
+    </section>
     <section class="fin" id="fin" aria-label="We can work in any field">
       <div class="fin-cam"><div class="dash" id="dash">
         <aside class="side">
