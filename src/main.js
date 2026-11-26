@@ -28,7 +28,7 @@ function layout(){const vh=innerHeight;MED_PX=Math.max(0,medscroll.offsetHeight-
   const yS=clamp(offIn($("sec-services"),medscroll).y-vh*.2,0,MED_PX),bk=offIn($("sec-book"),medscroll),
         yB=clamp(bk.y-Math.max(30,(vh-bk.h)/2),yS,MED_PX),yA=MED_PX;
   // [kind, scroll length, page y from, page y to]
-  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",2.2*vh,yA,yA],["fly",.6*vh,yA,yA],["end",.05*vh,yA,yA]];
+  const segs=[["assemble",1.1*vh,0,0],["scroll",yS,0,yS],["svc",.8*vh,yS,yS],["scroll",yB-yS,yS,yB],["book",1.8*vh,yB,yB],["scroll",yA-yB,yB,yA],["cal",.8*vh,yA,yA],["lift",.8*vh,yA,yA],["decode",1.0*vh,yA,yA],["roll",1.7*vh,yA,yA],["fly",.25*vh,yA,yA],["end",.05*vh,yA,yA]];
   measureParts();
   let s=0;TL=segs.map(([k,len,y0,y1])=>{const o={k,s0:s,s1:s+len,y0,y1};s+=len;return o});MED_LEN=s;
   track.style.height=(FIN_VH*vh+MED_LEN+(ST_CAM_VH+ST_HOLD_VH)*vh+(N-1)*STEP_VH*vh+vh)+"px"}
@@ -142,7 +142,7 @@ function ending(s,W,H){
   medscroll.style.willChange="";
   // 1. a hard 3D dive at the booking; it holds while the text decodes; the pull-back happens WHILE the weeks roll
   const y=pageY(s),b=cached("demoAp",()=>offIn(demoAp,medscroll)),wx=b.x+b.w/2,wy=b.y+b.h/2;
-  const S1=Math.min(.52*W/b.w,.34*H/b.h),zin=1-Math.pow(1-pl,3),zout=smooth(clamp(pr/.8)),z=zin*(1-zout);
+  const S1=Math.min(.52*W/b.w,.34*H/b.h),zin=1-Math.pow(1-pl,3),zout=.5*smooth(clamp(pr)),z=zin*(1-zout);
   const sc=Math.pow(S1,z),px=lerp(wx,W*.5,z),py=lerp(wy-y,H*.5,z);
   const rx=28*z,ry=-22*z,rz=5*z;
   // big layers get rasterised at reduced resolution when magnified this much; once the camera settles on the booking,
@@ -156,12 +156,12 @@ function ending(s,W,H){
   // 3. while pulling back, the page falls to black and the calendar becomes a detached glass card whose weeks roll into the future
   if(pr>0){if(!FLY)buildFly();calfly.hidden=false;
     blackout.style.opacity=smooth(clamp(pr/.4)).toFixed(3);blackout.style.background="#000";
-    const det=smooth(clamp((pr-.15)/.5)),fade=smooth(pf);
+    const det=smooth(clamp((pr-.15)/.5)),fade=smooth(clamp((pr-.42)/.5));
     calfly.style.setProperty("--glass",(1-.55*det).toFixed(3));
-    // no expand, no fly-off: the card stays put and simply fades into the black while the weeks keep going
+    // still tilted and still rolling, the calendar goes to black: no pause on a full calendar, no zoom
     Object.assign(calfly.style,{left:FLY.cr.x+"px",top:FLY.cr.y+"px",width:FLY.cr.w+"px",height:FLY.cr.h+"px",transform:"",opacity:(1-fade).toFixed(3),filter:""});
     // one continuous run across the roll and the fade: speeds up, then keeps rolling into the future
-    const u=clamp((pr*2.2+pf*.6)/2.8-.04)/.96,w=ROLL_WEEKS*Math.pow(u,1.35),speed=clamp(u/.25);
+    const u=clamp(pr-.03)/.97,w=ROLL_WEEKS*Math.pow(u,1.25),speed=clamp(u/.25);
     FLY.track.style.transform=`translate3d(${(-w*FLY.weekW).toFixed(1)}px,0,0)`;FLY.track.style.filter=speed>.08?`blur(${(speed*4).toFixed(1)}px)`:"";
     const lbl=weekLabel(Math.round(w));if(lbl!==lastLbl){lastLbl=lbl;FLY.lbl.textContent=lbl}}
   else{calfly.hidden=true;blackout.style.opacity=0}
@@ -340,7 +340,7 @@ function update(sc){
     const plan=flowPlan(sc,asmEnd,[[finLen*.5,finLen*(.5+.5*.46),2.6]],.7*vh);autoTo(asmEnd,plan.ms,plan.ease)}
   const medStart=finLen,restStart=medStart+MED_LEN,ms=clamp(sc-medStart,0,MED_LEN),y=pageY(ms);
   const zg=TL.find(g=>g.k==="lift"),sw=TL.find(g=>g.k==="fly"),zs=finLen+zg.s0,ze=finLen+sw.s1;
-  const flyStart=finLen+sw.s0,stStart=flyStart+(sw.s1-sw.s0)*.2,stCamEnd=stStart+ST_CAM_VH*vh,stripStart=Math.max(restStart,stCamEnd)+ST_HOLD_VH*vh;
+  const flyStart=finLen+sw.s0,rw=TL.find(g=>g.k==="roll"),stStart=finLen+rw.s0+(rw.s1-rw.s0)*.9,stCamEnd=stStart+ST_CAM_VH*vh,stripStart=Math.max(restStart,stCamEnd)+ST_HOLD_VH*vh;
   // the ending runs straight into the studio camera: no stop between the black and the back of the head
   if(!AUTO&&!reduce&&lastSc<zs&&sc>=zs&&sc<stCamEnd-2){const plan=flowPlan(sc,stCamEnd,[[stStart,stCamEnd,1.05]],.94*vh);autoTo(stCamEnd,plan.ms,plan.ease)}
   lastSc=sc;
@@ -354,7 +354,7 @@ function update(sc){
   strip.style.transform=`translate3d(${-pos*100}%,0,0)`;
   // studio sits between healthcare and music: visible from the black onwards, slides out with the strip
   STC=clamp((sc-stStart)/(ST_CAM_VH*vh));ST_ON=sc>=stStart-1&&pos<1;
-  studioEl.style.visibility=ST_ON?"visible":"hidden";studioEl.style.opacity=smooth(clamp((sc-stStart)/((sw.s1-sw.s0)*.8))).toFixed(3);studioEl.style.transform=pos>0?`translate3d(${-pos*100}%,0,0)`:"";
+  studioEl.style.visibility=ST_ON?"visible":"hidden";studioEl.style.opacity=smooth(clamp((sc-stStart)/((rw.s1-rw.s0)*.1))).toFixed(3);studioEl.style.transform=pos>0?`translate3d(${-pos*100}%,0,0)`:"";
   if(a!==active){active=a;tagA.textContent=LABELS[a][0];tagB.textContent=LABELS[a][1];
     [...dots.children].forEach((d,k)=>d.classList.toggle("on",k===a));
     const pi=a>=3?a-2:a===1?0:-1,w=pi>=0&&panels[pi].querySelector(".word");if(w){w.classList.remove("enter");void w.offsetWidth;w.classList.add("enter")}}
