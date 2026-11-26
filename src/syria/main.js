@@ -44,13 +44,8 @@ function layout(mode, cur) {
     for (let i = 0; i < N; i++) { const d = wrap(i - cur);
       out.push({ x: row ? cx + d * (w + g) : cx, y: row ? cy : cy + d * (h + g), h, r: 0, o: 1, z: 10 - Math.abs(d) }); }
   } else if (mode === "single") {
-    // a big messy pile in the empty left field: every card that flicks past stays underneath, slightly askew
-    const mob = W < 760, h = S.h * (mob ? 0.62 : 0.66), px = mob ? cx : W * 0.37, py = S.y + S.h * (mob ? 0.5 : 0.42);
-    for (let i = 0; i < N; i++) {
-      const k = pile.indexOf(i), top = i === cur;
-      out.push({ x: px + (top ? 0 : (((i * 37) % 9) - 4) * h * 0.03), y: py + (top ? 0 : (((i * 29) % 7) - 3) * h * 0.025), h,
-        r: top ? -9 : -16 + ((i * 53) % 24), o: k >= 0 || top ? 1 : 0, z: top ? 60 : 10 + k });
-    }
+    const h = S.h * 0.3;
+    for (let i = 0; i < N; i++) out.push({ x: cx, y: cy, h, r: -10, o: i === cur ? 1 : 0, z: i === cur ? 50 : 1 });
   } else { // hero
     for (let i = 0; i < N; i++) out.push({ x: cx, y: cy, h: S.h, r: 0, o: i === cur ? 1 : 0, z: i === cur ? 50 : 1 });
   }
@@ -93,17 +88,14 @@ function showHeroType(on) {
 }
 
 /* ---------- modes ---------- */
-let flick = null, pile = [];
+let flick = null;
 function go(m, opts = {}) {
-  if (m === "single" && mode !== "single") pile = [cur];
   if (flick) { flick.kill(); flick = null; }
   mode = m; syncInfo(); place(m, opts); showHeroType(m === "hero");
   document.querySelectorAll(".modes [data-m]").forEach((b) => b.classList.toggle("on", b.dataset.m === m));
   if (m === "single" && !reduce) { // the changing-images shuffle: the top card flicks through the stack
     let k = 0; flick = gsap.delayedCall(0.75, function tick() {
-      cur = (cur + 1) % N; pile.push(cur); syncInfo(); place("single", { instant: true });
-      const el = tiles[cur], sc = gsap.getProperty(el, "scale");
-      gsap.fromTo(el, { scale: sc * 1.14, autoAlpha: 0 }, { scale: sc, autoAlpha: 1, duration: 0.14, ease: "power2.out" });
+      cur = (cur + 1) % N; syncInfo(); place("single", { instant: true });
       if (++k < 11) flick = gsap.delayedCall(0.07 + k * 0.012, tick);
     });
   }
